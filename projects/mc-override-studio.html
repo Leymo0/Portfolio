@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MC Override Studio — LEYMO_</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site-header">
+    <a class="back-link" href="../index.html">&larr; all projects</a>
+  </header>
+
+  <section class="hero">
+    <span class="eyebrow">tool::mc_override — minecraft / fabric &amp; forge</span>
+    <h1>MC <span class="accent">Override</span> Studio</h1>
+    <p class="lede">A browser tool for rewriting Minecraft's crafting recipes, loot tables, and mob drops — across an entire mods folder — without writing a line of Java.</p>
+    <div class="btn-row">
+      <a class="btn primary" href="../tools/mc-override-studio.html">Launch the tool &rarr;</a>
+      <span class="pill"><span class="pulse"></span>actively used</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>// the problem</h2>
+    <p>
+      I had ~160 mods loaded and wanted to change specific crafting recipes, restrict where certain
+      loot spawned, and tweak mob drops — without compiling a Fabric mod (which needs a full dev
+      environment) or hand-writing datapack JSON by digging through every mod jar one at a time.
+      Datapacks can already override any mod's recipes and loot tables natively — the missing piece
+      was a UI to actually browse and edit them.
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>// what it does</h2>
+    <ul class="feature-list">
+      <li><span class="dot"></span><div>
+        <b>Scans every mod jar</b>
+        <span>Unpacks each .jar in the browser (including nested jar-in-jar dependencies) and indexes every recipe and loot table it finds.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Real item icons, pulled from the mods themselves</b>
+        <span>Extracts each mod's own texture files and resolves them through its item models, so the UI shows actual icons instead of raw item IDs.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Per-item recipe browser</b>
+        <span>Look up any item and see every recipe that produces it rendered as an actual crafting grid, smelting pair, or stonecutting entry — not JSON.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Point-and-click loot table editing</b>
+        <span>Restrict a drop to a specific biome, structure, or dimension without hand-writing loot condition JSON.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Autocomplete everywhere</b>
+        <span>Typing an item ID anywhere in the recipe builder shows a live icon dropdown of matches across every loaded mod.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Version- and loader-aware export</b>
+        <span>Generates a ready-to-drop-in datapack, with correct folder names and <code>pack_format</code> for Minecraft 1.20.1 through 1.21.10 — works the same on Fabric, Forge, and NeoForge, since datapacks aren't loader-specific.</span>
+      </div></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>// how it's built</h2>
+    <p>
+      Single HTML file, vanilla JS, no build step. Uses <b>JSZip</b> to read mod jars directly in the
+      browser and generate the exported datapack as a downloadable zip. Nothing is uploaded anywhere —
+      every mod jar you load stays entirely on your machine.
+    </p>
+  </section>
+
+  <div class="todo">
+    <b>// TODO(leymo):</b> drop in a screenshot or short screen-recording of the item recipe browser
+    and the crafting-grid view here, and link the real GitHub repo if you publish the source.
+  </div>
+
+  <footer class="site-footer">
+    <span class="fine">mc_override // status: active</span>
+    <div class="footer-links">
+      <a href="../index.html">&larr; back home</a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

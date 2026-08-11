@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MC Override Studio — Recipes &amp; Loot Tables</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --bg:#161616; --bg2:#1e1e1e; --bg3:#262626; --panel:#202020;
+    --border:#3a3a3a; --text:#e8e8e8; --dim:#9a9a9a;
+    --accent:#5fb85f; --accent-d:#3d8b3d; --danger:#c85c5c; --danger-d:#8f3d3d;
+    --warn:#d0a441; --blue:#5b8fc7; --mono:'Consolas','Menlo',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:14px}
+  header{background:linear-gradient(180deg,#2a2a2a,#1c1c1c);border-bottom:2px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.3px}
+  header h1 span{color:var(--accent)}
+  header .sub{color:var(--dim);font-size:12px}
+  .btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600}
+  .btn:hover{border-color:#666}
+  .btn.primary{background:var(--accent-d);border-color:var(--accent)}
+  .btn.primary:hover{background:var(--accent)}
+  .btn.danger{background:var(--danger-d);border-color:var(--danger)}
+  .btn.danger:hover{background:var(--danger)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.small{padding:4px 9px;font-size:11.5px;border-radius:4px}
+  #fileInput{display:none}
+  .status{font-size:12px;color:var(--dim)}
+  nav{display:flex;gap:2px;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px}
+  nav button{background:transparent;border:none;color:var(--dim);padding:12px 18px;cursor:pointer;font-size:13.5px;font-weight:600;border-bottom:3px solid transparent}
+  nav button.active{color:var(--text);border-bottom-color:var(--accent)}
+  nav button:hover{color:var(--text)}
+  main{padding:18px 20px;max-width:1500px;margin:0 auto}
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  input[type=text],select,textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:13px;font-family:inherit}
+  textarea{font-family:var(--mono);font-size:12.5px;width:100%;resize:vertical}
+  .search{flex:1;min-width:200px}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  thead th{text-align:left;background:var(--bg3);padding:9px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);border-bottom:1px solid var(--border)}
+  tbody td{padding:8px 10px;border-bottom:1px solid #2a2a2a;font-size:13px;vertical-align:top}
+  tbody tr:hover{background:#242424}
+  .mono{font-family:var(--mono);font-size:12px}
+  .tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;text-transform:uppercase}
+  .tag.mod{background:#2d3a4a;color:#8fb8e8}
+  .tag.removed{background:var(--danger-d);color:#ffd6d6}
+  .tag.edited{background:#4a3d1a;color:#f0d896}
+  .tag.added{background:var(--accent-d);color:#d6ffd6}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .empty{padding:40px;text-align:center;color:var(--dim)}
+  .empty b{color:var(--text)}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:10px;width:min(760px,92vw);max-height:86vh;display:flex;flex-direction:column}
+  .modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .modal-head h3{margin:0;font-size:15px}
+  .modal-body{padding:16px 18px;overflow:auto}
+  .modal-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+  label{font-size:12px;color:var(--dim);display:block;margin-bottom:4px;margin-top:10px;font-weight:600}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:520px}
+  .grid3 input{width:100%;text-align:left;padding:8px 7px;font-size:12px}
+  #acDropdown{position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:6px;max-height:260px;overflow-y:auto;z-index:200;display:none;box-shadow:0 8px 22px rgba(0,0,0,.55)}
+  #acDropdown .ac-item{display:flex;align-items:center;gap:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-family:var(--mono);white-space:nowrap}
+  #acDropdown .ac-item img{width:16px;height:16px;image-rendering:pixelated;background:#000;border-radius:2px;flex-shrink:0}
+  #acDropdown .ac-item:hover,#acDropdown .ac-item.sel{background:var(--bg2);color:var(--accent)}
+  .form-row{display:flex;gap:10px;flex-wrap:wrap}
+  .form-row>div{flex:1;min-width:160px}
+  .hint{color:var(--dim);font-size:11.5px;margin-top:4px;line-height:1.4}
+  .panel-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+  .panel-box h3{margin-top:0;font-size:14px}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}
+  .stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+  .stat .n{font-size:24px;font-weight:800}
+  .stat .l{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .changelist{max-height:260px;overflow:auto;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
+  .changelist .item{display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #2a2a2a;font-size:12.5px}
+  .changelist .item:last-child{border:none}
+  .pool-box{border:1px solid var(--border);border-radius:8px;padding:10px;margin:8px 0;background:var(--bg2)}
+  .cond-chip{display:inline-flex;align-items:center;gap:6px;background:#2d3a2d;border:1px solid #3d5a3d;color:#bfe8bf;padding:3px 8px;border-radius:12px;font-size:11px;margin:3px 4px 0 0}
+  .cond-chip button{background:none;border:none;color:#e88;cursor:pointer;font-weight:700;padding:0}
+  footer{color:var(--dim);font-size:11.5px;padding:30px 20px;text-align:center}
+  a{color:var(--blue)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#444;border-radius:5px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>MC <span>Override</span> Studio</h1>
+    <div class="sub">Recipes · Loot Tables · Mob Drops — datapack generator (works with Fabric, Forge &amp; NeoForge — pick your Minecraft version at export)</div>
+    <div class="sub" style="margin-top:2px">Optional: "Add Vanilla / Extra Jar" loads your Minecraft client jar (e.g. <span class="mono">.minecraft/versions/1.21.1/1.21.1.jar</span>) so vanilla items get icons and vanilla recipes/loot tables show up too.</div>
+  </div>
+  <input type="file" id="fileInput" webkitdirectory multiple>
+  <input type="file" id="fileInput2" accept=".jar" multiple style="display:none">
+  <button class="btn primary" id="loadBtn">📁 Load Mods Folder</button>
+  <button class="btn" id="loadExtraBtn" title="Optional. This tool only reads mod jars by default, so vanilla items (sticks, diamonds, etc.) won't have icons and vanilla's own recipes/loot tables won't be listed. Click this and pick your Minecraft client jar — found at .minecraft/versions/1.21.1/1.21.1.jar (folder name matches your installed version) — to add those in. You can also use this to load any single extra jar, like a resource pack in .jar form.">🧊 Add Vanilla / Extra Jar</button>
+  <span class="status" id="loadStatus">No mods loaded yet</span>
+</header>
+
+<nav id="tabs">
+  <button data-tab="recipes" class="active">Recipes</button>
+  <button data-tab="addrecipe">Add Recipe</button>
+  <button data-tab="loot">Loot Tables</button>
+  <button data-tab="itembrowser">Item Recipes</button>
+  <button data-tab="export">Export Datapack</button>
+  <button data-tab="help">How it works</button>
+</nav>
+
+<main>
+
+  <!-- RECIPES TAB -->
+  <div class="tabpane" id="pane-recipes">
+    <div class="toolbar">
+      <input type="text" class="search" id="recipeSearch" placeholder="Search recipes by id, mod, or item...">
+      <select id="recipeModFilter"><option value="">All mods</option></select>
+      <select id="recipeTypeFilter"><option value="">All types</option></select>
+      <select id="recipeStateFilter">
+        <option value="">All states</option>
+        <option value="removed">Removed</option>
+        <option value="edited">Edited</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr><th style="width:110px">Mod</th><th>Recipe ID</th><th style="width:150px">Type</th><th style="width:80px">Status</th><th style="width:220px">Actions</th></tr></thead>
+      <tbody id="recipeTbody"></tbody>
+    </table>
+    <div id="recipeEmpty" class="empty"><b>Load your mods folder</b> to see every recipe defined by every mod, then remove or edit any of them.</div>
+  </div>
+
+  <!-- ADD RECIPE TAB -->
+  <div class="tabpane" id="pane-addrecipe" style="display:none">
+    <div class="panel-box">
+      <h3>Build a new recipe</h3>
+      <div class="form-row">
+        <div>
+          <label>Recipe type</label>
+          <select id="newType">
+            <option value="minecraft:crafting_shaped">Shaped crafting (3x3 grid)</option>
+            <option value="minecraft:crafting_shapeless">Shapeless crafting</option>
+            <option value="minecraft:smelting">Furnace smelting</option>
+            <option value="minecraft:blasting">Blast furnace</option>
+            <option value="minecraft:smoking">Smoker</option>
+            <option value="minecraft:campfire_cooking">Campfire</option>
+            <option value="minecraft:stonecutting">Stonecutter</option>
+          </select>
+        </div>
+        <div>
+          <label>New recipe ID (namespace:path)</label>
+          <input type="text" id="newId" placeholder="myoverrides:my_new_sword" style="width:100%">
+        </div>
+      </div>
+      <div class="hint">Tip: use your own namespace (e.g. <span class="mono">myoverrides</span>) unless you intentionally want to <b>override</b> an existing mod recipe — in that case reuse that mod's exact namespace:path (find it in the Recipes tab).</div>
+
+      <div id="shapedFields" style="display:block">
+        <label>3×3 grid — type an item id in each cell you want filled (e.g. minecraft:stick), leave blank for empty</label>
+        <div class="grid3" id="shapedGrid"></div>
+      </div>
+
+      <div id="shapelessFields" style="display:none">
+        <label>Ingredients (comma-separated item ids, duplicates allowed for multiple of one item)</label>
+        <input type="text" id="shapelessIngredients" style="width:100%" placeholder="minecraft:stick, minecraft:stick, minecraft:coal">
+      </div>
+
+      <div id="cookingFields" style="display:none">
+        <div class="form-row">
+          <div><label>Ingredient item id</label><input type="text" id="cookIngredient" style="width:100%" placeholder="minecraft:beef"></div>
+          <div><label>Experience</label><input type="text" id="cookExp" style="width:100%" value="0.35"></div>
+          <div><label>Cooking time (ticks)</label><input type="text" id="cookTime" style="width:100%" value="200"></div>
+        </div>
+      </div>
+
+      <div id="stonecutFields" style="display:none">
+        <label>Ingredient item id</label>
+        <input type="text" id="scIngredient" style="width:100%" placeholder="minecraft:stone">
+      </div>
+
+      <div class="form-row" id="resultFields">
+        <div><label>Result item id</label><input type="text" id="resultItem" style="width:100%" placeholder="minecraft:diamond_sword"></div>
+        <div><label>Result count</label><input type="text" id="resultCount" style="width:100%" value="1"></div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+        <button class="btn primary" id="addRecipeBtn">➕ Add to datapack</button>
+        <button class="btn" id="previewRecipeBtn">👁 Preview JSON</button>
+      </div>
+      <pre id="newRecipePreview" class="mono" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px;overflow:auto"></pre>
+    </div>
+  </div>
+
+  <!-- LOOT TABLES TAB -->
+  <div class="tabpane" id="pane-loot" style="display:none">
+    <div class="toolbar">
+      <input type="text" class="search" id="lootSearch" placeholder="Search loot tables (block, mob, chest name)...">
+      <select id="lootCategoryFilter">
+        <option value="">All categories</option>
+        <option value="blocks">Block drops</option>
+        <option value="entities">Mob drops</option>
+        <option value="chests">Chest loot</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="lootModFilter"><option value="">All mods</option></select>
+    </div>
+    <table>
+      <thead><tr><th style="width:110px">Mod</th><th>Loot Table ID</th><th style="width:100px">Category</th><th style="width:90px">Status</th><th style="width:150px">Actions</th></tr></thead>
+      <tbody id="lootTbody"></tbody>
+    </table>
+    <div id="lootEmpty" class="empty"><b>Load your mods folder</b> to see every block/mob/chest loot table, then edit or restrict where drops happen.</div>
+  </div>
+
+  <!-- ITEM RECIPE BROWSER TAB -->
+  <div class="tabpane" id="pane-itembrowser" style="display:none">
+    <div class="panel-box">
+      <label style="margin-top:0">Look up an item</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="text" id="itemBrowserSearch" placeholder="minecraft:diamond_sword" style="width:340px">
+        <img id="itemBrowserIcon" width="30" height="30" style="image-rendering:pixelated;background:#000;border-radius:5px;visibility:hidden;border:1px solid var(--border)">
+      </div>
+      <div class="hint">Shows every recipe that produces this item as a simple visual grid — no JSON reading required. Autocomplete works the same as the Add Recipe tab.</div>
+    </div>
+    <div id="itemBrowserResults"><div class="empty">Type an item id above to see its recipes.</div></div>
+  </div>
+
+  <!-- EXPORT TAB -->
+  <div class="tabpane" id="pane-export" style="display:none">
+    <div class="panel-box">
+      <h3>Pending changes</h3>
+      <div class="summary-grid">
+        <div class="stat"><div class="n" id="statRemoved">0</div><div class="l">Recipes removed</div></div>
+        <div class="stat"><div class="n" id="statEdited">0</div><div class="l">Recipes edited</div></div>
+        <div class="stat"><div class="n" id="statAdded">0</div><div class="l">Recipes added</div></div>
+        <div class="stat"><div class="n" id="statLoot">0</div><div class="l">Loot tables changed</div></div>
+      </div>
+      <div class="changelist" id="changeList"></div>
+    </div>
+    <div class="panel-box">
+      <h3>Datapack settings</h3>
+      <div class="form-row">
+        <div><label>Datapack name (folder/zip name)</label><input type="text" id="packName" value="my_overrides" style="width:100%"></div>
+        <div><label>Description</label><input type="text" id="packDesc" value="Custom recipe and loot table overrides" style="width:100%"></div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Target Minecraft version</label>
+          <select id="targetVersion" style="width:100%"></select>
+          <div class="hint">Datapacks are loader-agnostic — the same zip works for Fabric, Forge, and NeoForge. What actually matters is the <b>Minecraft version</b>: it changed the recipe/loot table folder names in 1.21, and the <span class="mono">pack_format</span> number every version or two. Pick the version your instance runs so the pack loads correctly.</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn primary" id="exportBtn">⬇ Download Datapack .zip</button>
+        <button class="btn danger" id="resetBtn">🗑 Clear all changes</button>
+      </div>
+      <div class="hint" style="margin-top:14px">
+        <b>Install:</b> unzip and drop the folder into <span class="mono">.minecraft/saves/&lt;your world&gt;/datapacks/</span>, then in-game run <span class="mono">/reload</span> (or re-enable it via the world's Data Packs screen). To apply it to <b>every</b> world automatically, use a "global datapack" loader mod (e.g. search Modrinth for "Datapack Enabler"), or just copy the folder into each new world's datapacks folder.
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP TAB -->
+  <div class="tabpane" id="pane-help" style="display:none">
+    <div class="panel-box">
+      <h3>What this tool actually does</h3>
+      <p>Fabric doesn't need a compiled mod to override another mod's recipes or loot tables — vanilla's own <b>datapack</b> system already does that: if a datapack loaded after a mod's built-in data defines a file at the exact same path (e.g. <span class="mono">data/minecraft/recipe/diamond_sword.json</span>), the later one wins. This tool scans every jar in your mods folder, lets you browse/edit/remove/add those files with a UI, and packages the result into a ready-to-use datapack — no Java, no compiling, no Fabric API needed.</p>
+      <h3>Removing a recipe</h3>
+      <p>Vanilla has no "delete" instruction for a single recipe file. The standard trick (used by most recipe-removal datapacks) is to overwrite the file with an empty JSON object <span class="mono">{}</span>. Minecraft fails to parse it as a recipe, logs a harmless warning, and simply never registers it — so it disappears from crafting and the recipe book. This tool does that automatically when you hit "Remove".</p>
+      <h3>Restricting where things spawn/drop (loot tables)</h3>
+      <p>Loot tables support a <span class="mono">minecraft:location_check</span> condition that can require a specific biome, structure, or dimension before a pool/entry is granted. In the Loot Tables tab, open any table and use "Add location condition" to attach one to a pool — e.g. make an ore's extra drop only happen in the <span class="mono">minecraft:deep_dark</span> biome, or a mob's rare drop only occur in the Nether.</p>
+      <h3>Item icons</h3>
+      <p>Mod jars bundle their own item textures, so icons for modded items appear automatically once you load your mods folder. For icons on <b>vanilla</b> items (sticks, diamonds, etc.) — and to also browse/override vanilla's own recipes and loot tables — click <b>Add Vanilla / Extra Jar</b> and pick your client jar, usually at <span class="mono">.minecraft/versions/&lt;version&gt;/&lt;version&gt;.jar</span> (e.g. <span class="mono">.minecraft/versions/1.21.1/1.21.1.jar</span>). Everything stays on your machine — nothing is uploaded.</p>
+      <h3>Mob drops</h3>
+      <p>These are just loot tables under <span class="mono">data/&lt;namespace&gt;/loot_table/entities/&lt;mob&gt;.json</span> — same editor, filter by "Mob drops" category.</p>
+      <h3>Load order</h3>
+      <p>Datapacks generated by this tool load automatically after the mods (mod-builtin data always loads first, then world datapacks by their listed order — newest/last added generally wins), so your overrides apply. If something doesn't seem to override, check <span class="mono">/datapack list</span> in-game and make sure your pack is enabled and positioned after the mod's pack.</p>
+      <h3>Fabric, Forge, NeoForge, and different Minecraft versions</h3>
+      <p>Datapacks aren't tied to a mod loader — a Fabric mod, a Forge mod, and a NeoForge mod all ship their recipes and loot tables in the exact same <span class="mono">data/&lt;namespace&gt;/…</span> layout, because that's vanilla Minecraft's own format, not something each loader invents. So this tool scans and generates the same way regardless of which loader the jars came from, and the exported pack works on any of them. Two things do genuinely change by <b>Minecraft version</b>, which is why there's a version picker in the Export tab: the recipe/loot-table folder got renamed from plural to singular in 1.21 (handled automatically), and the <span class="mono">pack_format</span> number in <span class="mono">pack.mcmeta</span> changes every version or two — pick the version your instance actually runs.</p>
+      <p>One Forge/NeoForge-specific quirk: some Forge mods wrap a recipe in a <span class="mono">forge:conditional</span> (or <span class="mono">neoforge:conditional</span>) block that only applies it if certain mods/items are present. The Item Recipes tab automatically unwraps these to show you the actual recipe inside; when you Edit one, you're editing the real inner recipe, but keep in mind that overwriting the whole file removes the conditional check too (usually fine, but worth knowing if that mod ships several alternate versions of the same recipe).</p>
+    </div>
+  </div>
+
+</main>
+
+<div class="modal-bg" id="editModalBg">
+  <div class="modal">
+    <div class="modal-head"><h3 id="editModalTitle">Edit JSON</h3><button class="btn small" id="editModalClose">✕</button></div>
+    <div class="modal-body">
+      <textarea id="editModalTextarea" rows="20" style="min-height:340px"></textarea>
+      <div id="editModalError" style="color:var(--danger);font-size:12px;margin-top:8px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="editModalCancel">Cancel</button>
+      <button class="btn primary" id="editModalSave">Save change</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="lootModalBg">
+  <div class="modal" style="width:min(900px,94vw)">
+    <div class="modal-head"><h3 id="lootModalTitle">Loot table</h3><button class="btn small" id="lootModalClose">✕</button></div>
+    <div class="modal-body" id="lootModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" id="lootModalCancel">Close</button>
+      <button class="btn primary" id="lootModalSave">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="acDropdown"></div>
+
+<footer>MC Override Studio — runs 100% locally in your browser. No files are uploaded anywhere.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- State ----------
+  const state = {
+    recipes: new Map(),   // id -> {id, ns, path, source, type, json}
+    loot: new Map(),      // id -> {id, ns, path, source, category, json}
+    changes: { recipes: new Map(), loot: new Map() } // id -> {action:'remove'|'edit'|'add', content}
+  };
+
+  // ---------- Icons ----------
+  const textureBlobs = new Map();  // "ns:item/name" or "ns:block/name" -> objectURL
+  const itemModels = new Map();    // "ns:name" -> parsed model json
+  const iconCache = new Map();     // itemId -> objectURL or null
+
+  function resolveIconUrl(itemId){
+    if(!itemId) return null;
+    if(iconCache.has(itemId)) return iconCache.get(itemId);
+    const parts = itemId.split(':');
+    if(parts.length!==2) { iconCache.set(itemId,null); return null; }
+    const [ns,name] = parts;
+    let url = null;
+    const model = itemModels.get(ns+':'+name);
+    if(model && model.textures){
+      let texKey = model.textures.layer0 || model.textures.all || model.textures.texture || model.textures.particle || Object.values(model.textures)[0];
+      if(texKey && !texKey.startsWith('#')){
+        if(!texKey.includes(':')) texKey = 'minecraft:'+texKey;
+        url = textureBlobs.get(texKey);
+      }
+    }
+    if(!url) url = textureBlobs.get(ns+':item/'+name);
+    if(!url) url = textureBlobs.get(ns+':block/'+name);
+    iconCache.set(itemId, url || null);
+    return url || null;
+  }
+
+  function iconTag(itemId, size){
+    size = size||18;
+    const url = resolveIconUrl(itemId);
+    if(!url) return `<span style="display:inline-block;width:${size}px;height:${size}px;vertical-align:middle;margin-right:5px"></span>`;
+    return `<img src="${url}" width="${size}" height="${size}" style="image-rendering:pixelated;vertical-align:middle;margin-right:5px;background:#000;border-radius:2px" title="${esc(itemId)}">`;
+  }
+
+  function getResultItemId(json){
+    if(!json || !json.result) return null;
+    if(typeof json.result === 'string') return json.result;
+    return json.result.id || json.result.item || null;
+  }
+
+  // ---------- Item index for autocomplete ----------
+  let allItemIds = [];
+  function collectItemsFromJson(obj, set){
+    if(!obj || typeof obj!=='object') return;
+    for(const k in obj){
+      const v = obj[k];
+      if((k==='item'||k==='id'||k==='name') && typeof v==='string' && v.includes(':') && !/\s/.test(v) && !v.includes('#')) set.add(v);
+      if(v && typeof v==='object') collectItemsFromJson(v, set);
+    }
+  }
+  function buildItemIndex(){
+    const set = new Set();
+    itemModels.forEach((v,k)=> set.add(k));
+    state.recipes.forEach(r=> collectItemsFromJson(r.json, set));
+    state.loot.forEach(l=> collectItemsFromJson(l.json, set));
+    allItemIds = Array.from(set).sort();
+  }
+
+  // ---------- Autocomplete engine (shared dropdown) ----------
+  const acDropdown = document.getElementById('acDropdown');
+  let acCurrentInput = null, acItems = [], acSelIndex = -1, acOnPick = null;
+
+  function hideAc(){ acDropdown.style.display='none'; acCurrentInput=null; acItems=[]; acSelIndex=-1; }
+  function updateAcSel(){
+    Array.from(acDropdown.querySelectorAll('.ac-item')).forEach((el,i)=>el.classList.toggle('sel', i===acSelIndex));
+  }
+  function showAc(matches, input, onPick){
+    if(!matches.length){ hideAc(); return; }
+    acItems = matches; acCurrentInput = input; acOnPick = onPick; acSelIndex = -1;
+    acDropdown.innerHTML = matches.map((id,i)=>`<div class="ac-item" data-i="${i}">${iconTag(id,16)}<span>${esc(id)}</span></div>`).join('');
+    const rect = input.getBoundingClientRect();
+    acDropdown.style.left = Math.round(rect.left)+'px';
+    acDropdown.style.top = Math.round(rect.bottom+4)+'px';
+    acDropdown.style.minWidth = Math.max(rect.width,220)+'px';
+    acDropdown.style.display='block';
+  }
+  acDropdown.addEventListener('mousedown', (e)=>{
+    const item = e.target.closest('.ac-item'); if(!item) return;
+    e.preventDefault();
+    const picked = acItems[parseInt(item.dataset.i)];
+    if(acOnPick) acOnPick(picked);
+    hideAc();
+  });
+  window.addEventListener('scroll', hideAc, true);
+  window.addEventListener('resize', hideAc);
+
+  function attachAutocomplete(input, opts){
+    opts = opts || {};
+    const multi = !!opts.multi;
+    function currentQuery(){
+      if(!multi) return input.value;
+      const parts = input.value.split(',');
+      return parts[parts.length-1];
+    }
+    function applyPick(id){
+      if(!multi){ input.value = id; }
+      else{
+        const parts = input.value.split(',');
+        parts[parts.length-1] = ' '+id;
+        input.value = parts.join(',').replace(/^\s*,\s*/,'').trimStart();
+      }
+      if(opts.onChange) opts.onChange();
+      input.focus();
+    }
+    input.addEventListener('input', ()=>{
+      if(opts.onChange) opts.onChange();
+      const q = currentQuery().trim().toLowerCase();
+      if(q.length<1){ hideAc(); return; }
+      let matches = allItemIds.filter(id=>id.toLowerCase().includes(q));
+      matches.sort((a,b)=>{
+        const an=(a.split(':')[1]||a).toLowerCase(), bn=(b.split(':')[1]||b).toLowerCase();
+        const as=an.startsWith(q), bs=bn.startsWith(q);
+        if(as&&!bs) return -1; if(bs&&!as) return 1;
+        return a.length-b.length;
+      });
+      showAc(matches.slice(0,40), input, applyPick);
+    });
+    input.addEventListener('keydown', (e)=>{
+      if(acCurrentInput!==input || acDropdown.style.display==='none') return;
+      if(e.key==='ArrowDown'){ e.preventDefault(); acSelIndex=Math.min(acSelIndex+1, acItems.length-1); updateAcSel(); }
+      else if(e.key==='ArrowUp'){ e.preventDefault(); acSelIndex=Math.max(acSelIndex-1,0); updateAcSel(); }
+      else if(e.key==='Enter'){ if(acSelIndex>=0){ e.preventDefault(); applyPick(acItems[acSelIndex]); hideAc(); } }
+      else if(e.key==='Escape'){ hideAc(); }
+    });
+    input.addEventListener('blur', ()=> setTimeout(()=>{ if(acCurrentInput===input) hideAc(); }, 150));
+  }
+
+  const $ = sel => document.querySelector(sel);
+  const $all = sel => Array.from(document.querySelectorAll(sel));
+
+  // ---------- Tabs ----------
+  $all('nav#tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      $all('nav#tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      $all('.tabpane').forEach(p=>p.style.display='none');
+      $('#pane-'+btn.dataset.tab).style.display='block';
+      if(btn.dataset.tab==='export') renderExport();
+      if(btn.dataset.tab==='itembrowser') renderItemBrowser();
+    });
+  });
+
+  // ---------- Loading mods ----------
+  $('#loadBtn').addEventListener('click', ()=> $('#fileInput').click());
+  async function processJarFiles(files, statusEl, buttonsToDisable){
+    let done = 0;
+    let nestedCount = 0;
+
+    async function scanZipEntries(zip, modName){
+      for(const path in zip.files){
+        const entry = zip.files[path];
+        if(entry.dir) continue;
+
+        // Recurse into jar-in-jar bundled dependencies
+        const nestedJar = path.match(/^META-INF\/jars\/(.+\.jar)$/i);
+        if(nestedJar){
+          try{
+            const nestedBuf = await entry.async('arraybuffer');
+            const nestedZip = await JSZip.loadAsync(nestedBuf);
+            nestedCount++;
+            await scanZipEntries(nestedZip, modName + ' › ' + nestedJar[1].replace(/\.jar$/i,''));
+          }catch(err){ /* skip unreadable nested jar */ }
+          continue;
+        }
+
+        // Item/block textures -> for icons
+        let tm = path.match(/^assets\/([^\/]+)\/textures\/(item|block)\/(.+)\.png$/);
+        if(tm){
+          try{
+            const blob = await entry.async('blob');
+            textureBlobs.set(`${tm[1]}:${tm[2]}/${tm[3]}`, URL.createObjectURL(blob));
+          }catch(err){ /* skip */ }
+          continue;
+        }
+        // Item models -> map item id to its texture reference
+        let mm = path.match(/^assets\/([^\/]+)\/models\/item\/(.+)\.json$/);
+        if(mm){
+          try{
+            const text = await entry.async('text');
+            itemModels.set(`${mm[1]}:${mm[2]}`, JSON.parse(text));
+          }catch(err){ /* skip */ }
+          continue;
+        }
+
+        let m = path.match(/^data\/([^\/]+)\/(recipe|recipes)\/(.+\.json)$/);
+        if(m){
+          const ns = m[1], sub = m[3].replace(/\.json$/,'');
+          const id = ns+':'+sub;
+          try{
+            const text = await entry.async('text');
+            const json = JSON.parse(text);
+            state.recipes.set(id, {id, ns, path: sub, source: modName, type: json.type||'unknown', json});
+          }catch(err){ /* skip unparsable */ }
+          continue;
+        }
+        m = path.match(/^data\/([^\/]+)\/(loot_table|loot_tables)\/(.+\.json)$/);
+        if(m){
+          const ns = m[1], sub = m[3].replace(/\.json$/,'');
+          const id = ns+':'+sub;
+          let category = 'other';
+          if(sub.startsWith('blocks/')) category='blocks';
+          else if(sub.startsWith('entities/')) category='entities';
+          else if(sub.startsWith('chests/')) category='chests';
+          try{
+            const text = await entry.async('text');
+            const json = JSON.parse(text);
+            state.loot.set(id, {id, ns, path: sub, source: modName, category, json});
+          }catch(err){ /* skip */ }
+        }
+      }
+    }
+
+    for(const file of files){
+      try{
+        const buf = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(buf);
+        const modName = file.name.replace(/\.jar$/i,'');
+        await scanZipEntries(zip, modName);
+      }catch(err){ console.warn('Failed reading jar', file.name, err); }
+      done++;
+      statusEl.textContent = `Scanning ${done} / ${files.length} jars${nestedCount?` (+${nestedCount} bundled)`:''}...`;
+    }
+
+    iconCache.clear(); // new textures may now be available
+    buildItemIndex();
+    buttonsToDisable.forEach(b=>b.disabled=false);
+    populateFilters();
+    renderRecipes();
+    renderLoot();
+    return nestedCount;
+  }
+
+  $('#fileInput').addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files).filter(f=>f.name.toLowerCase().endsWith('.jar'));
+    if(!files.length){ $('#loadStatus').textContent = 'No .jar files found in that folder.'; return; }
+    $('#loadStatus').textContent = `Scanning 0 / ${files.length} jars...`;
+    $('#loadBtn').disabled = true; $('#loadExtraBtn').disabled = true;
+    state.recipes.clear(); state.loot.clear();
+    await processJarFiles(files, $('#loadStatus'), [$('#loadBtn'), $('#loadExtraBtn')]);
+    $('#loadStatus').textContent = `Loaded ${state.recipes.size} recipes and ${state.loot.size} loot tables from ${files.length} mods.`;
+    e.target.value = '';
+  });
+
+  $('#loadExtraBtn').addEventListener('click', ()=> $('#fileInput2').click());
+  $('#fileInput2').addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files).filter(f=>f.name.toLowerCase().endsWith('.jar'));
+    if(!files.length) return;
+    $('#loadStatus').textContent = `Scanning ${files.length} extra jar(s)...`;
+    $('#loadBtn').disabled = true; $('#loadExtraBtn').disabled = true;
+    await processJarFiles(files, $('#loadStatus'), [$('#loadBtn'), $('#loadExtraBtn')]);
+    $('#loadStatus').textContent = `Loaded ${state.recipes.size} recipes and ${state.loot.size} loot tables total (extra jars merged in).`;
+    e.target.value = '';
+  });
+
+  function populateFilters(){
+    const mods = new Set(), types = new Set();
+    state.recipes.forEach(r=>{ mods.add(r.source); types.add(r.type); });
+    const modSel = $('#recipeModFilter'); modSel.innerHTML = '<option value="">All mods</option>';
+    Array.from(mods).sort().forEach(m=>modSel.innerHTML += `<option value="${esc(m)}">${esc(m)}</option>`);
+    const typeSel = $('#recipeTypeFilter'); typeSel.innerHTML = '<option value="">All types</option>';
+    Array.from(types).sort().forEach(t=>typeSel.innerHTML += `<option value="${esc(t)}">${esc(t)}</option>`);
+
+    const lootMods = new Set();
+    state.loot.forEach(l=>lootMods.add(l.source));
+    const lootModSel = $('#lootModFilter'); lootModSel.innerHTML = '<option value="">All mods</option>';
+    Array.from(lootMods).sort().forEach(m=>lootModSel.innerHTML += `<option value="${esc(m)}">${esc(m)}</option>`);
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ---------- Recipes rendering ----------
+  function renderRecipes(){
+    const q = $('#recipeSearch').value.trim().toLowerCase();
+    const modF = $('#recipeModFilter').value;
+    const typeF = $('#recipeTypeFilter').value;
+    const stateF = $('#recipeStateFilter').value;
+    const tbody = $('#recipeTbody');
+    tbody.innerHTML = '';
+    let rows = Array.from(state.recipes.values());
+    if(modF) rows = rows.filter(r=>r.source===modF);
+    if(typeF) rows = rows.filter(r=>r.type===typeF);
+    if(q) rows = rows.filter(r=> r.id.toLowerCase().includes(q) || r.source.toLowerCase().includes(q) || JSON.stringify(r.json).toLowerCase().includes(q));
+    if(stateF) rows = rows.filter(r=>{
+      const c = state.changes.recipes.get(r.id);
+      if(!c) return false;
+      return c.action===stateF;
+    });
+    rows.sort((a,b)=>a.id.localeCompare(b.id));
+
+    $('#recipeEmpty').style.display = state.recipes.size ? 'none' : 'block';
+    if(state.recipes.size && !rows.length){
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">No recipes match your filters.</td></tr>`;
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    rows.slice(0,500).forEach(r=>{
+      const c = state.changes.recipes.get(r.id);
+      const tr = document.createElement('tr');
+      let statusTag = '';
+      if(c && c.action==='remove') statusTag = '<span class="tag removed">Removed</span>';
+      else if(c && c.action==='edit') statusTag = '<span class="tag edited">Edited</span>';
+      const activeJson = (c && c.content) || r.json;
+      const resultId = getResultItemId(activeJson);
+      tr.innerHTML = `
+        <td><span class="tag mod">${esc(r.source)}</span></td>
+        <td class="mono">${iconTag(resultId)}${esc(r.id)}</td>
+        <td class="mono" style="color:var(--dim)">${esc(r.type.replace('minecraft:',''))}</td>
+        <td>${statusTag}</td>
+        <td class="row-actions">
+          <button class="btn small" data-act="view" data-id="${esc(r.id)}">View</button>
+          <button class="btn small" data-act="edit" data-id="${esc(r.id)}">Edit</button>
+          ${c && c.action==='remove'
+            ? `<button class="btn small" data-act="unremove" data-id="${esc(r.id)}">Undo</button>`
+            : `<button class="btn small danger" data-act="remove" data-id="${esc(r.id)}">Remove</button>`}
+        </td>`;
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+    if(rows.length>500){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" class="empty">Showing first 500 of ${rows.length} results — narrow your search.</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  ['recipeSearch','recipeModFilter','recipeTypeFilter','recipeStateFilter'].forEach(id=>{
+    $('#'+id).addEventListener('input', renderRecipes);
+    $('#'+id).addEventListener('change', renderRecipes);
+  });
+
+  $('#recipeTbody').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    const id = btn.dataset.id, act = btn.dataset.act;
+    const r = state.recipes.get(id);
+    if(act==='view') openViewModal(r.id, r.json, 'recipe');
+    else if(act==='edit') openEditModal(r.id, (state.changes.recipes.get(id)?.content) || r.json, 'recipe');
+    else if(act==='remove'){ state.changes.recipes.set(id, {action:'remove', content:{}}); renderRecipes(); renderItemBrowser(); }
+    else if(act==='unremove'){ state.changes.recipes.delete(id); renderRecipes(); renderItemBrowser(); }
+  });
+
+  // ---------- View / Edit modal (shared for recipes & manual loot JSON edits) ----------
+  let editCtx = null; // {id, kind}
+  function openViewModal(id, json, kind){
+    $('#editModalTitle').textContent = id + ' (read-only view)';
+    $('#editModalTextarea').value = JSON.stringify(json, null, 2);
+    $('#editModalTextarea').readOnly = true;
+    $('#editModalSave').style.display = 'none';
+    $('#editModalError').textContent='';
+    $('#editModalBg').classList.add('show');
+    editCtx = null;
+  }
+  function openEditModal(id, json, kind){
+    $('#editModalTitle').textContent = 'Edit: ' + id;
+    $('#editModalTextarea').value = JSON.stringify(json, null, 2);
+    $('#editModalTextarea').readOnly = false;
+    $('#editModalSave').style.display = 'inline-block';
+    $('#editModalError').textContent='';
+    $('#editModalBg').classList.add('show');
+    editCtx = {id, kind};
+  }
+  function closeEditModal(){ $('#editModalBg').classList.remove('show'); editCtx=null; }
+  $('#editModalClose').addEventListener('click', closeEditModal);
+  $('#editModalCancel').addEventListener('click', closeEditModal);
+  $('#editModalSave').addEventListener('click', ()=>{
+    if(!editCtx) return;
+    try{
+      const parsed = JSON.parse($('#editModalTextarea').value);
+      if(editCtx.kind==='recipe'){
+        state.changes.recipes.set(editCtx.id, {action: state.recipes.has(editCtx.id)?'edit':'add', content: parsed});
+        renderRecipes();
+        renderItemBrowser();
+      } else if(editCtx.kind==='loot'){
+        state.changes.loot.set(editCtx.id, {action:'edit', content: parsed});
+        renderLoot();
+      }
+      closeEditModal();
+    }catch(err){
+      $('#editModalError').textContent = 'Invalid JSON: ' + err.message;
+    }
+  });
+
+  // ---------- Item Recipe Browser ----------
+  function unwrapConditionalRecipe(json){
+    // Forge/NeoForge wrap conditional recipes: {"type":"forge:conditional","recipes":[[{"conditions":[...],"recipe":{...}}]]}
+    if(json && (json.type==='forge:conditional' || json.type==='neoforge:conditional') && Array.isArray(json.recipes)){
+      for(const group of json.recipes){
+        const arr = Array.isArray(group) ? group : [group];
+        for(const entry of arr){ if(entry && entry.recipe) return entry.recipe; }
+      }
+    }
+    return json;
+  }
+  function iconBox(id, size){
+    size = size||32;
+    const url = id ? resolveIconUrl(id) : null;
+    const inner = Math.round(size*0.75);
+    return `<div style="width:${size}px;height:${size}px;background:#000;border:1px solid #333;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="${id?esc(id):''}">${url?`<img src="${url}" width="${inner}" height="${inner}" style="image-rendering:pixelated">`:''}</div>`;
+  }
+  function ingredientId(ing){
+    if(!ing) return null;
+    if(typeof ing==='string') return ing;
+    if(Array.isArray(ing)) return ing[0] ? ingredientId(ing[0]) : null;
+    return ing.item || ing.id || null;
+  }
+  function renderRecipeCard(m){
+    const json = m.activeJson;
+    const type = (json.type||'unknown').replace(/^(minecraft|forge|neoforge):/,'');
+    let body;
+    if(json.type==='minecraft:crafting_shaped' && json.pattern && json.key){
+      const cells = [];
+      for(let r=0;r<3;r++){
+        const row = json.pattern[r] || '';
+        for(let c=0;c<3;c++){
+          const ch = row[c] || ' ';
+          const key = ch===' ' ? null : json.key[ch];
+          cells.push(ch===' ' ? null : ingredientId(key));
+        }
+      }
+      body = `<div style="display:grid;grid-template-columns:repeat(3,34px);gap:3px;background:#111;padding:8px;border-radius:6px;width:fit-content">${cells.map(id=>iconBox(id,34)).join('')}</div>`;
+    } else if(json.type==='minecraft:crafting_shapeless' && json.ingredients){
+      body = `<div style="display:flex;gap:6px;flex-wrap:wrap;max-width:340px">${json.ingredients.map(ing=>iconBox(ingredientId(ing))).join('')}</div>`;
+    } else if(['minecraft:smelting','minecraft:blasting','minecraft:smoking','minecraft:campfire_cooking'].includes(json.type)){
+      body = `<div style="display:flex;align-items:center;gap:10px">${iconBox(ingredientId(json.ingredient))}<span style="font-size:20px">🔥</span><span class="hint" style="margin:0">${json.cookingtime?json.cookingtime+' ticks':''}</span></div>`;
+    } else if(json.type==='minecraft:stonecutting'){
+      body = `<div style="display:flex;align-items:center;gap:10px">${iconBox(ingredientId(json.ingredient))}<span style="font-size:18px">🪚</span></div>`;
+    } else if(json.type==='minecraft:smithing_transform' || json.type==='minecraft:smithing_trim'){
+      body = `<div style="display:flex;align-items:center;gap:8px">${iconBox(ingredientId(json.template))}<span>+</span>${iconBox(ingredientId(json.base))}<span>+</span>${iconBox(ingredientId(json.addition))}</div>`;
+    } else {
+      const set = new Set(); collectItemsFromJson(json, set);
+      const resultId0 = getResultItemId(json);
+      set.delete(resultId0);
+      body = `<div style="display:flex;gap:6px;flex-wrap:wrap;max-width:340px">${Array.from(set).slice(0,9).map(id=>iconBox(id)).join('')}</div><div class="hint">Custom/modded recipe type (${esc(type)}) — icons are a best guess from its ingredients; check raw JSON for exact logic.</div>`;
+    }
+    const resultCount = (json.result && json.result.count) || 1;
+    const c = m.changeState;
+    const statusTag = c ? (c.action==='remove' ? '<span class="tag removed">Removed</span>' : '<span class="tag edited">Edited</span>') : '';
+    return `<div class="panel-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:11px;color:var(--dim);margin-bottom:6px">${esc(m.source)} · <span class="mono">${esc(m.id)}</span> · ${esc(type)} ${statusTag}</div>
+          ${body}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px;color:var(--dim)">→</span>
+          <div style="text-align:center">
+            ${iconBox(getResultItemId(json), 38)}
+            <div style="font-size:11px;color:var(--dim);margin-top:2px">×${resultCount}</div>
+          </div>
+        </div>
+      </div>
+      <div class="row-actions" style="margin-top:10px">
+        <button class="btn small" data-act="view" data-id="${esc(m.id)}">View JSON</button>
+        <button class="btn small" data-act="edit" data-id="${esc(m.id)}">Edit</button>
+        ${c && c.action==='remove'
+          ? `<button class="btn small" data-act="unremove" data-id="${esc(m.id)}">Undo</button>`
+          : `<button class="btn small danger" data-act="remove" data-id="${esc(m.id)}">Remove</button>`}
+      </div>
+    </div>`;
+  }
+  function renderItemBrowser(){
+    const q = $('#itemBrowserSearch').value.trim();
+    const iconEl = $('#itemBrowserIcon');
+    const url = resolveIconUrl(q);
+    if(url){ iconEl.src = url; iconEl.style.visibility='visible'; } else iconEl.style.visibility='hidden';
+    const results = $('#itemBrowserResults');
+    if(!q || !q.includes(':')){ results.innerHTML = '<div class="empty">Type an item id above to see its recipes.</div>'; return; }
+    const matches = [];
+    state.recipes.forEach(r=>{
+      const raw = (state.changes.recipes.get(r.id)?.content) || r.json;
+      const unwrapped = unwrapConditionalRecipe(raw);
+      if(getResultItemId(unwrapped) === q){
+        matches.push({...r, activeJson: unwrapped, changeState: state.changes.recipes.get(r.id)});
+      }
+    });
+    if(!matches.length){
+      results.innerHTML = `<div class="empty">No recipes currently produce <b>${esc(q)}</b> in what's loaded — it may not be craftable, only obtainable another way, or the mod that adds its recipe isn't loaded yet.</div>`;
+      return;
+    }
+    results.innerHTML = matches.map(m=>renderRecipeCard(m)).join('');
+  }
+  $('#itemBrowserResults').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    const id = btn.dataset.id, act = btn.dataset.act;
+    const r = state.recipes.get(id);
+    if(!r) return;
+    if(act==='view') openViewModal(r.id, (state.changes.recipes.get(id)?.content) || r.json, 'recipe');
+    else if(act==='edit') openEditModal(r.id, (state.changes.recipes.get(id)?.content) || r.json, 'recipe');
+    else if(act==='remove'){ state.changes.recipes.set(id, {action:'remove', content:{}}); renderRecipes(); renderItemBrowser(); }
+    else if(act==='unremove'){ state.changes.recipes.delete(id); renderRecipes(); renderItemBrowser(); }
+  });
+  attachAutocomplete($('#itemBrowserSearch'), {onChange: renderItemBrowser});
+
+  // ---------- Add Recipe tab ----------
+  const grid = $('#shapedGrid');
+  for(let i=0;i<9;i++){
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px';
+    const icon = document.createElement('img');
+    icon.width=24; icon.height=24;
+    icon.style.cssText = 'image-rendering:pixelated;background:#000;border-radius:3px;opacity:.85;visibility:hidden';
+    const inp = document.createElement('input');
+    inp.type='text'; inp.placeholder='minecraft:...'; inp.dataset.cell=i;
+    attachAutocomplete(inp, {onChange: ()=>updateCellIcon(inp, icon)});
+    wrap.appendChild(icon); wrap.appendChild(inp);
+    grid.appendChild(wrap);
+  }
+  function updateCellIcon(inp, icon){
+    const url = resolveIconUrl(inp.value.trim());
+    if(url){ icon.src = url; icon.style.visibility='visible'; }
+    else { icon.style.visibility='hidden'; }
+  }
+  const resultIcon = document.createElement('img');
+  resultIcon.width=22; resultIcon.height=22;
+  resultIcon.style.cssText = 'image-rendering:pixelated;background:#000;border-radius:3px;vertical-align:middle;margin-left:8px;visibility:hidden';
+  $('#resultItem').insertAdjacentElement('afterend', resultIcon);
+  function updateResultIcon(){
+    const url = resolveIconUrl($('#resultItem').value.trim());
+    if(url){ resultIcon.src=url; resultIcon.style.visibility='visible'; } else resultIcon.style.visibility='hidden';
+  }
+  attachAutocomplete($('#resultItem'), {onChange: updateResultIcon});
+  attachAutocomplete($('#shapelessIngredients'), {multi:true});
+  attachAutocomplete($('#cookIngredient'));
+  attachAutocomplete($('#scIngredient'));
+  $('#newType').addEventListener('change', ()=>{
+    const t = $('#newType').value;
+    $('#shapedFields').style.display = t==='minecraft:crafting_shaped' ? 'block':'none';
+    $('#shapelessFields').style.display = t==='minecraft:crafting_shapeless' ? 'block':'none';
+    $('#cookingFields').style.display = ['minecraft:smelting','minecraft:blasting','minecraft:smoking','minecraft:campfire_cooking'].includes(t) ? 'block':'none';
+    $('#stonecutFields').style.display = t==='minecraft:stonecutting' ? 'block':'none';
+    $('#resultFields').style.display = t==='minecraft:stonecutting' ? 'none':'flex';
+  });
+
+  function buildRecipeJson(){
+    const t = $('#newType').value;
+    const resultItem = $('#resultItem').value.trim();
+    const resultCount = parseInt($('#resultCount').value)||1;
+    if(t==='minecraft:crafting_shaped'){
+      const cells = Array.from(grid.querySelectorAll('input')).map(i=>i.value.trim());
+      const rows3 = [cells.slice(0,3), cells.slice(3,6), cells.slice(6,9)];
+      // build key map
+      const letters = 'ABCDEFGHI';
+      const itemToKey = {}; let li=0;
+      const pattern = rows3.map(row=> row.map(cell=>{
+        if(!cell) return ' ';
+        if(!(cell in itemToKey)){ itemToKey[cell] = letters[li++]; }
+        return itemToKey[cell];
+      }).join('') ).map(s=>s.replace(/\s+$/,'') || s);
+      const key = {};
+      Object.keys(itemToKey).forEach(item=>{ key[itemToKey[item]] = {item}; });
+      return {
+        type:'minecraft:crafting_shaped',
+        pattern: rows3.map(row=>row.map(c=> c? itemToKey[c] : ' ').join('')),
+        key,
+        result: {id: resultItem, count: resultCount}
+      };
+    }
+    if(t==='minecraft:crafting_shapeless'){
+      const items = $('#shapelessIngredients').value.split(',').map(s=>s.trim()).filter(Boolean);
+      return {
+        type:'minecraft:crafting_shapeless',
+        ingredients: items.map(i=>({item:i})),
+        result: {id: resultItem, count: resultCount}
+      };
+    }
+    if(['minecraft:smelting','minecraft:blasting','minecraft:smoking','minecraft:campfire_cooking'].includes(t)){
+      return {
+        type: t,
+        ingredient: {item: $('#cookIngredient').value.trim()},
+        result: {id: resultItem, count: resultCount},
+        experience: parseFloat($('#cookExp').value)||0,
+        cookingtime: parseInt($('#cookTime').value)||200
+      };
+    }
+    if(t==='minecraft:stonecutting'){
+      return {
+        type:'minecraft:stonecutting',
+        ingredient: {item: $('#scIngredient').value.trim()},
+        result: {id: resultItem, count: resultCount}
+      };
+    }
+    return {};
+  }
+
+  $('#previewRecipeBtn').addEventListener('click', ()=>{
+    const json = buildRecipeJson();
+    const pre = $('#newRecipePreview');
+    pre.textContent = JSON.stringify(json, null, 2);
+    pre.style.display='block';
+  });
+
+  $('#addRecipeBtn').addEventListener('click', ()=>{
+    const id = $('#newId').value.trim();
+    if(!id || !id.includes(':')){ alert('Enter a valid id like myoverrides:my_recipe'); return; }
+    if(!$('#resultItem').value.trim() && $('#newType').value!=='minecraft:stonecutting'){ /* stonecutting also needs result actually */ }
+    if(!$('#resultItem').value.trim()){ alert('Enter a result item id.'); return; }
+    const json = buildRecipeJson();
+    const action = state.recipes.has(id) ? 'edit' : 'add';
+    state.changes.recipes.set(id, {action, content: json});
+    alert((action==='edit' ? 'Override' : 'New recipe') + ' queued: ' + id + '\\nCheck the Export tab when ready.');
+    renderRecipes();
+  });
+
+  // ---------- Loot table rendering ----------
+  function renderLoot(){
+    const q = $('#lootSearch').value.trim().toLowerCase();
+    const catF = $('#lootCategoryFilter').value;
+    const modF = $('#lootModFilter').value;
+    const tbody = $('#lootTbody');
+    tbody.innerHTML = '';
+    let rows = Array.from(state.loot.values());
+    if(catF) rows = rows.filter(r=>r.category===catF);
+    if(modF) rows = rows.filter(r=>r.source===modF);
+    if(q) rows = rows.filter(r=>r.id.toLowerCase().includes(q) || r.source.toLowerCase().includes(q));
+    rows.sort((a,b)=>a.id.localeCompare(b.id));
+
+    $('#lootEmpty').style.display = state.loot.size ? 'none':'block';
+    if(state.loot.size && !rows.length){
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">No loot tables match your filters.</td></tr>`;
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    rows.slice(0,500).forEach(r=>{
+      const c = state.changes.loot.get(r.id);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="tag mod">${esc(r.source)}</span></td>
+        <td class="mono">${esc(r.id)}</td>
+        <td class="mono" style="color:var(--dim)">${esc(r.category)}</td>
+        <td>${c ? '<span class="tag edited">Edited</span>' : ''}</td>
+        <td class="row-actions"><button class="btn small" data-id="${esc(r.id)}">Open</button></td>`;
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+    if(rows.length>500){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="5" class="empty">Showing first 500 of ${rows.length} results — narrow your search.</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+  ['lootSearch','lootCategoryFilter','lootModFilter'].forEach(id=>{
+    $('#'+id).addEventListener('input', renderLoot);
+    $('#'+id).addEventListener('change', renderLoot);
+  });
+
+  let lootCtx = null;
+  $('#lootTbody').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    const id = btn.dataset.id;
+    const r = state.loot.get(id);
+    const working = JSON.parse(JSON.stringify((state.changes.loot.get(id)?.content) || r.json));
+    lootCtx = {id, working};
+    renderLootModal();
+    $('#lootModalBg').classList.add('show');
+  });
+
+  function renderLootModal(){
+    const {id, working} = lootCtx;
+    $('#lootModalTitle').textContent = id;
+    const pools = working.pools || [];
+    let html = `<div class="hint">Add a location condition to restrict a whole pool to a biome, structure, or dimension. For anything more custom, edit the raw JSON directly below.</div>`;
+    pools.forEach((pool, pi)=>{
+      const conds = pool.conditions || [];
+      const locConds = conds.filter(c=>c.condition==='minecraft:location_check');
+      const entryIcons = (pool.entries||[]).filter(en=>en.type==='minecraft:item' && en.name)
+        .map(en=>`<span style="display:inline-flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:2px 7px 2px 2px;margin:3px 4px 0 0;font-size:11.5px">${iconTag(en.name,16)}${esc(en.name)}</span>`).join('');
+      html += `<div class="pool-box">
+        <b>Pool #${pi+1}</b> <span style="color:var(--dim);font-size:11.5px">(${(pool.entries||[]).length} entries, rolls: ${JSON.stringify(pool.rolls ?? 1)})</span>
+        <div>${entryIcons}</div>
+        <div id="poolConds-${pi}">
+          ${locConds.map((c,ci)=>lootCondChip(c,pi,ci)).join('')}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <select id="condType-${pi}">
+            <option value="biome">Restrict to biome</option>
+            <option value="structure">Restrict to structure</option>
+            <option value="dimension">Restrict to dimension</option>
+          </select>
+          <input type="text" id="condValue-${pi}" placeholder="e.g. minecraft:deep_dark" style="width:220px">
+          <button class="btn small" data-addcond="${pi}">+ Add condition</button>
+        </div>
+      </div>`;
+    });
+    if(!pools.length){ html += `<div class="hint">This loot table has no top-level "pools" array (may use a different structure) — use the raw JSON editor below.</div>`; }
+    html += `<label>Raw JSON (edits here take priority — click "Save changes" to apply)</label>
+      <textarea id="lootRawJson" rows="14">${esc(JSON.stringify(working, null, 2))}</textarea>`;
+    $('#lootModalBody').innerHTML = html;
+
+    $all('[data-addcond]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const pi = parseInt(b.dataset.addcond);
+        const type = $('#condType-'+pi).value;
+        const val = $('#condValue-'+pi).value.trim();
+        if(!val){ alert('Enter a value, e.g. minecraft:deep_dark'); return; }
+        const predicate = {};
+        if(type==='biome') predicate.biomes = val;
+        if(type==='structure') predicate.structures = val;
+        if(type==='dimension') predicate.dimension = val;
+        working.pools[pi].conditions = working.pools[pi].conditions || [];
+        working.pools[pi].conditions.push({condition:'minecraft:location_check', predicate});
+        renderLootModal();
+      });
+    });
+  }
+
+  function lootCondChip(c, pi, ci){
+    const p = c.predicate||{};
+    let label = Object.entries(p).map(([k,v])=>`${k}=${v}`).join(', ') || 'condition';
+    return `<span class="cond-chip">${esc(label)}<button data-rmcond="${pi}:${ci}">✕</button></span>`;
+  }
+  $('#lootModalBody').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-rmcond]'); if(!btn) return;
+    const [pi,ci] = btn.dataset.rmcond.split(':').map(Number);
+    const pool = lootCtx.working.pools[pi];
+    const locConds = pool.conditions.filter(c=>c.condition==='minecraft:location_check');
+    const target = locConds[ci];
+    pool.conditions = pool.conditions.filter(c=>c!==target);
+    renderLootModal();
+  });
+
+  function closeLootModal(){ $('#lootModalBg').classList.remove('show'); lootCtx=null; }
+  $('#lootModalClose').addEventListener('click', closeLootModal);
+  $('#lootModalCancel').addEventListener('click', closeLootModal);
+  $('#lootModalSave').addEventListener('click', ()=>{
+    if(!lootCtx) return;
+    try{
+      const raw = $('#lootRawJson').value;
+      const parsed = JSON.parse(raw);
+      state.changes.loot.set(lootCtx.id, {action:'edit', content: parsed});
+      renderLoot();
+      closeLootModal();
+    }catch(err){
+      alert('Invalid JSON in raw editor: ' + err.message);
+    }
+  });
+
+  // ---------- Export ----------
+  function renderExport(){
+    let removed=0, edited=0, added=0;
+    state.changes.recipes.forEach((c,id)=>{
+      if(c.action==='remove') removed++;
+      else if(state.recipes.has(id)) edited++;
+      else added++;
+    });
+    $('#statRemoved').textContent = removed;
+    $('#statEdited').textContent = edited;
+    $('#statAdded').textContent = added;
+    $('#statLoot').textContent = state.changes.loot.size;
+
+    const list = $('#changeList');
+    list.innerHTML = '';
+    const rows = [];
+    state.changes.recipes.forEach((c,id)=> rows.push({id, kind:'recipe', action:c.action}));
+    state.changes.loot.forEach((c,id)=> rows.push({id, kind:'loot table', action:'edit'}));
+    if(!rows.length){
+      list.innerHTML = '<div class="item"><span style="color:var(--dim)">No changes yet — go remove/edit/add something first.</span></div>';
+    } else {
+      rows.forEach(r=>{
+        list.innerHTML += `<div class="item"><span class="mono">${esc(r.id)}</span><span style="color:var(--dim)">${r.kind} · ${r.action}</span></div>`;
+      });
+    }
+  }
+
+  // ---------- Minecraft version -> pack_format / folder-name table ----------
+  // Folder names went singular ("recipe","loot_table") starting in 1.21; pack_format per version per the Minecraft Wiki.
+  const VERSIONS = [
+    {label:'1.20.1',        format:15, singular:false},
+    {label:'1.20.2',        format:18, singular:false},
+    {label:'1.20.4',        format:22, singular:false},
+    {label:'1.20.6',        format:41, singular:false},
+    {label:'1.21 – 1.21.1', format:48, singular:true},
+    {label:'1.21.2 – 1.21.3', format:57, singular:true},
+    {label:'1.21.4',        format:61, singular:true},
+    {label:'1.21.5',        format:71, singular:true},
+    {label:'1.21.6',        format:80, singular:true},
+    {label:'1.21.7 – 1.21.8', format:81, singular:true},
+    {label:'1.21.9 – 1.21.10 (range format)', format:88, singular:true, minMax:true},
+  ];
+  const verSel = $('#targetVersion');
+  VERSIONS.forEach((v,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = v.label + ' (pack_format ' + v.format + ')';
+    if(v.label.startsWith('1.21 ')) opt.selected = true; // default to 1.21.1, matches header title
+    verSel.appendChild(opt);
+  });
+
+  $('#resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Clear every pending change? This cannot be undone.')) return;
+    state.changes.recipes.clear(); state.changes.loot.clear();
+    renderRecipes(); renderLoot(); renderExport();
+  });
+
+  $('#exportBtn').addEventListener('click', async ()=>{
+    if(!state.changes.recipes.size && !state.changes.loot.size){ alert('No changes to export yet.'); return; }
+    const name = ($('#packName').value.trim() || 'my_overrides').replace(/[^a-z0-9_\-]/gi,'_');
+    const desc = $('#packDesc').value.trim() || 'Custom overrides';
+    const v = VERSIONS[parseInt(verSel.value)] || VERSIONS[4];
+    const recipeFolder = v.singular ? 'recipe' : 'recipes';
+    const lootFolder = v.singular ? 'loot_table' : 'loot_tables';
+    const zip = new JSZip();
+    const meta = v.minMax
+      ? {pack:{description:desc, min_format:v.format, max_format:v.format}}
+      : {pack:{description:desc, pack_format:v.format}};
+    zip.file('pack.mcmeta', JSON.stringify(meta, null, 2));
+
+    state.changes.recipes.forEach((c, id)=>{
+      const [ns, ...rest] = id.split(':');
+      const path = rest.join(':');
+      zip.file(`data/${ns}/${recipeFolder}/${path}.json`, JSON.stringify(c.content, null, 2));
+    });
+    state.changes.loot.forEach((c, id)=>{
+      const [ns, ...rest] = id.split(':');
+      const path = rest.join(':');
+      zip.file(`data/${ns}/${lootFolder}/${path}.json`, JSON.stringify(c.content, null, 2));
+    });
+
+    const blob = await zip.generateAsync({type:'blob'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name + '.zip';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  });
+
+})();
+</script>
+</body>
+</html>
