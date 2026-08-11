@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>League Lobby Draft Tool — LEYMO_</title>
+<title>Roll for the Enemy — LEYMO_</title>
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -15,9 +15,10 @@
 
   <section class="hero">
     <span class="eyebrow">tool::draft_lobby — league of legends</span>
-    <h1>League Lobby <span class="accent" style="color:var(--teal)">Draft</span> Tool</h1>
-    <p class="lede">A custom draft randomizer for private lobbies, built to make normal games feel like a challenge run — with tiered champion pools and forced item builds.</p>
+    <h1>Roll for <span class="accent" style="color:var(--teal)">the Enemy</span></h1>
+    <p class="lede">A draft randomizer for private lobbies: you don't pick for yourself, you roll a champion and hand it to whoever you're drafting for — with tiered pools, forced item builds, and rules for running a full 5v5 with it.</p>
     <div class="btn-row">
+      <a class="btn teal" href="../tools/roll-for-the-enemy.html">Launch the tool &rarr;</a>
       <span class="pill"><span class="pulse" style="background:var(--teal)"></span>rebuilt twice, still tinkering</span>
     </div>
   </section>
@@ -25,10 +26,12 @@
   <section class="section">
     <h2>// the idea</h2>
     <p>
-      Normal draft in a private lobby gets stale fast. Instead of picking freely, this tool rolls
-      each player a champion from a tiered pool — and locks in a mandatory item build alongside it —
-      so every game forces a different playstyle instead of everyone reaching for the same handful
-      of champions.
+      Normal draft in a private lobby gets stale fast — everyone reaches for the same handful of
+      champions. This flips it: you roll for your <i>opponent</i> in the same role, not for yourself.
+      Pick a role, roll three champions, hand one over. Safe and spicy rolls all work fine in that
+      lane. Chaos rolls don't — that's the entire point of them — and every roll comes with a
+      mandatory first legendary item on top, so the challenge isn't just "what do I play," it's
+      "how do I make this work."
     </p>
   </section>
 
@@ -36,25 +39,40 @@
     <h2>// how it works</h2>
     <ul class="feature-list">
       <li><span class="dot"></span><div>
-        <b>Three difficulty tiers</b>
-        <span><b style="color:var(--text)">Safe</b> — solid, straightforward champions. <b style="color:var(--text)">Spicy</b> — off-meta but playable. <b style="color:var(--text)">Chaos</b> — pure comedy picks that force you to improvise.</span>
+        <b>Three tiers per role</b>
+        <span><b style="color:var(--text)">Safe</b> — solid, straightforward in that lane. <b style="color:var(--text)">Spicy</b> — off-meta but playable. <b style="color:var(--text)">Chaos</b> — deliberately bad in that specific lane, on purpose.</span>
       </div></li>
       <li><span class="dot"></span><div>
-        <b>Mandatory item assignments per roll</b>
-        <span>Each roll comes with a required build path, not just a champion — so the challenge isn't only "what do I play," it's "how do I make this work."</span>
+        <b>Five pool filters</b>
+        <span>Standard mixes safe and spicy with the occasional chaos pick slipped in. Or lock the roll to purely Safe, Spicy, Chaos, or full Mayhem across all three.</span>
       </div></li>
       <li><span class="dot"></span><div>
-        <b>Two full rebuilds</b>
-        <span>Went through it twice from scratch as the tiering logic and roll rules got refined based on what actually made games fun versus just chaotic.</span>
+        <b>Mandatory first-item roll</b>
+        <span>Every champion comes with a required first legendary alongside it — toggleable if you just want the champion pressure without the build constraint.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>No-repeats tracking</b>
+        <span>Once a champion's been handed off, it's out of the pool for that role until you clear the list — keeps a full draft from repeating picks.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>A running draft log</b>
+        <span>Every assigned pick gets logged with its role, tier, and item — so you can read the whole draft back at the end of the session.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Rules for a full 5v5</b>
+        <span>The tool itself only rolls one lane at a time — the page explains how both teams use it together, alternating who rolls first as you move down the role order, so a full team draft stays fair.</span>
       </div></li>
     </ul>
   </section>
 
-  <div class="todo">
-    <b>// TODO(leymo):</b> this page is running on what I remember about the tool from our chats —
-    fill in the actual stack (language/framework), a screenshot of a roll, and a repo/demo link if
-    you have one, and I'll tighten the copy to match exactly.
-  </div>
+  <section class="section">
+    <h2>// status</h2>
+    <p>
+      Rebuilt twice as the tiering and roll rules got refined — the current version adds
+      <b>Locke</b> as a safe-tier pick across every role, alongside the standard champion pool.
+      Single HTML file, no build step, same philosophy as the rest of what's on this site.
+    </p>
+  </section>
 
   <footer class="site-footer">
     <span class="fine">draft_lobby // status: active</span>
