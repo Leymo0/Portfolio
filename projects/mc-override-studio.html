@@ -3,25 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MC Override Studio — LEYMO_</title>
-<link rel="stylesheet" href="../style.css">
+<title>e=mc^e — leymo_</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#242424;
+  --bg-2:#1b1b1b;
+  --panel:#8b8b8b;
+  --panel-dark:#373737;
+  --panel-hi:#ffffff;
+  --wood:#8a5a34;
+  --wood-dark:#5c3b21;
+  --grass:#5a8f3c;
+  --diamond:#4ddad0;
+  --gold:#f2c94c;
+  --text:#f2f0e8;
+  --text-dim:#b7b3a6;
+  --pixel:"Press Start 2P",monospace;
+  --body:"VT323",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    repeating-linear-gradient(0deg, var(--bg-2) 0 4px, var(--bg) 4px 8px),
+    var(--bg);
+  color:var(--text);font-family:var(--body);font-size:20px;line-height:1.45;
+  min-height:100vh;
+}
+.wrap{max-width:900px;margin:0 auto;padding:26px 20px 80px}
+
+/* ---- pixel-bevel building block, used everywhere ---- */
+.bevel{
+  background:var(--panel);
+  box-shadow:
+    inset 3px 3px 0 rgba(255,255,255,.45),
+    inset -3px -3px 0 rgba(0,0,0,.5);
+  border-radius:0;
+}
+.bevel.dark{background:var(--panel-dark)}
+
+.pixel-btn{
+  font-family:var(--pixel);font-size:11px;color:var(--text);
+  background:var(--panel);
+  box-shadow:
+    inset 2px 2px 0 rgba(255,255,255,.5),
+    inset -2px -2px 0 rgba(0,0,0,.55);
+  padding:12px 16px;border:none;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:10px;letter-spacing:.02em;
+  image-rendering:pixelated;
+}
+.pixel-btn:hover{filter:brightness(1.12)}
+.pixel-btn:active{
+  box-shadow:
+    inset -2px -2px 0 rgba(255,255,255,.4),
+    inset 2px 2px 0 rgba(0,0,0,.55);
+}
+.pixel-btn.gold{background:var(--gold);color:#2b2205}
+.pixel-btn.diamond{background:var(--diamond);color:#0a2b28}
+
+header{padding:6px 0 30px}
+
+.eyebrow{
+  font-family:var(--pixel);font-size:9.5px;letter-spacing:.06em;color:var(--diamond);
+  display:block;margin-bottom:18px;
+}
+h1{
+  font-family:var(--pixel);font-size:clamp(26px,6vw,44px);line-height:1.35;
+  margin:0 0 6px;letter-spacing:.02em;text-shadow:3px 3px 0 rgba(0,0,0,.5);
+}
+h1 .mce{color:var(--gold)}
+.spelled-out{
+  font-family:var(--body);font-size:24px;color:var(--text-dim);
+  margin:0 0 22px;letter-spacing:.04em;
+}
+.lede{
+  max-width:60ch;color:var(--text);font-size:21px;margin:0 0 30px;
+}
+.lede b{color:var(--gold)}
+
+.btn-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.pill{
+  font-family:var(--pixel);font-size:9px;color:var(--grass);
+  display:inline-flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--panel-dark);box-shadow:inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.5);
+}
+.pill .dot{width:8px;height:8px;background:var(--grass);animation:blink 1.4s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
+
+.section{margin:44px 0}
+.section h2{
+  font-family:var(--pixel);font-size:13px;color:var(--gold);letter-spacing:.04em;
+  margin:0 0 18px;padding-bottom:10px;border-bottom:3px solid var(--panel-dark);
+}
+.section p{max-width:64ch;color:var(--text);font-size:21px}
+
+/* ---- inventory-slot feature cards ---- */
+.slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.item-slot{
+  padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;
+}
+.item-slot .icon{
+  width:34px;height:34px;background:var(--wood);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.35), inset -2px -2px 0 rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+}
+.item-slot .icon svg{width:20px;height:20px}
+.item-slot b{font-family:var(--pixel);font-size:11px;color:var(--text);line-height:1.6}
+.item-slot span{font-family:var(--body);font-size:18.5px;color:#3a3a3a;line-height:1.35}
+
+/* ---- craft-grid decoration, echoes the homepage signature ---- */
+.craft-deco{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:6px;margin:6px 0 40px}
+.craft-deco .cell{background:var(--panel-dark);box-shadow:inset 2px 2px 0 rgba(255,255,255,.1), inset -2px -2px 0 rgba(0,0,0,.5)}
+.craft-deco .cell.on{background:var(--gold);box-shadow:inset 2px 2px 0 rgba(255,255,255,.5), inset -2px -2px 0 rgba(0,0,0,.4)}
+
+footer{margin-top:60px;padding-top:24px;border-top:3px solid var(--panel-dark);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+footer .fine{font-family:var(--pixel);font-size:9px;color:var(--text-dim)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
 </head>
 <body>
 
 <div class="wrap">
-  <header class="site-header">
-    <a class="back-link" href="../index.html">&larr; all projects</a>
+  <header>
+    <a class="pixel-btn" href="../index.html">&larr; back</a>
   </header>
 
-  <section class="hero">
-    <span class="eyebrow">tool::mc_override — minecraft / fabric &amp; forge</span>
-    <h1>MC <span class="accent">Override</span> Studio</h1>
-    <p class="lede">A browser tool for rewriting Minecraft's crafting recipes, loot tables, and mob drops — across an entire mods folder — without writing a line of Java.</p>
-    <div class="btn-row">
-      <a class="btn primary" href="../tools/mc-override-studio.html">Launch the tool &rarr;</a>
-      <span class="pill"><span class="pulse"></span>actively used</span>
-    </div>
-  </section>
+  <span class="eyebrow">tool::e=mc^e — minecraft / fabric &amp; forge</span>
+  <h1>e=<span class="mce">mc<sup>e</sup></span></h1>
+  <p class="spelled-out">easy mods crafting editor</p>
+
+  <div class="craft-deco">
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell on"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  </div>
+
+  <p class="lede">A browser tool for rewriting Minecraft's crafting recipes, loot tables, and mob drops — across an entire mods folder — without writing a line of <b>Java</b>.</p>
+
+  <div class="btn-row">
+    <a class="pixel-btn gold" href="../tools/mc-override-studio.html">launch the tool &rarr;</a>
+    <span class="pill"><span class="dot"></span>actively used</span>
+  </div>
 
   <section class="section">
     <h2>// the problem</h2>
@@ -36,53 +162,52 @@
 
   <section class="section">
     <h2>// what it does</h2>
-    <ul class="feature-list">
-      <li><span class="dot"></span><div>
-        <b>Scans every mod jar</b>
-        <span>Unpacks each .jar in the browser (including nested jar-in-jar dependencies) and indexes every recipe and loot table it finds.</span>
-      </div></li>
-      <li><span class="dot"></span><div>
-        <b>Real item icons, pulled from the mods themselves</b>
-        <span>Extracts each mod's own texture files and resolves them through its item models, so the UI shows actual icons instead of raw item IDs.</span>
-      </div></li>
-      <li><span class="dot"></span><div>
-        <b>Per-item recipe browser</b>
-        <span>Look up any item and see every recipe that produces it rendered as an actual crafting grid, smelting pair, or stonecutting entry — not JSON.</span>
-      </div></li>
-      <li><span class="dot"></span><div>
-        <b>Point-and-click loot table editing</b>
-        <span>Restrict a drop to a specific biome, structure, or dimension without hand-writing loot condition JSON.</span>
-      </div></li>
-      <li><span class="dot"></span><div>
-        <b>Autocomplete everywhere</b>
-        <span>Typing an item ID anywhere in the recipe builder shows a live icon dropdown of matches across every loaded mod.</span>
-      </div></li>
-      <li><span class="dot"></span><div>
-        <b>Version- and loader-aware export</b>
-        <span>Generates a ready-to-drop-in datapack, with correct folder names and <code>pack_format</code> for Minecraft 1.20.1 through 1.21.10 — works the same on Fabric, Forge, and NeoForge, since datapacks aren't loader-specific.</span>
-      </div></li>
-    </ul>
+    <div class="slots-grid">
+      <div class="item-slot bevel">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2c94c" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 10h16M10 4v16"/></svg></div>
+        <b>scans every mod jar</b>
+        <span>Unpacks each .jar in the browser, including nested jar-in-jar dependencies, and indexes every recipe and loot table it finds.</span>
+      </div>
+      <div class="item-slot bevel">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4ddad0" stroke-width="2"><rect x="4" y="4" width="16" height="16"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg></div>
+        <b>real item icons</b>
+        <span>Pulls each mod's own texture files and resolves them through its item models, so you see actual icons instead of raw item IDs.</span>
+      </div>
+      <div class="item-slot bevel">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#5a8f3c" stroke-width="2"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></div>
+        <b>per-item recipe browser</b>
+        <span>Look up any item, see every recipe that makes it rendered as an actual crafting grid — not JSON.</span>
+      </div>
+      <div class="item-slot bevel">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2c94c" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg></div>
+        <b>point-and-click loot editing</b>
+        <span>Restrict a drop to a specific biome, structure, or dimension without hand-writing condition JSON.</span>
+      </div>
+      <div class="item-slot bevel">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4ddad0" stroke-width="2"><path d="M4 4l16 16M20 4L4 20"/></svg></div>
+        <b>autocomplete everywhere</b>
+        <span>Type an item id anywhere in the recipe builder, get a live icon dropdown of matches across every loaded mod.</span>
+      </div>
+      <div class="item-slot bevel">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#5a8f3c" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></div>
+        <b>version + loader aware export</b>
+        <span>Correct folder names and pack_format for Minecraft 1.20.1 through 1.21.10 — same output works on Fabric, Forge, and NeoForge.</span>
+      </div>
+    </div>
   </section>
 
   <section class="section">
     <h2>// how it's built</h2>
     <p>
-      Single HTML file, vanilla JS, no build step. Uses <b>JSZip</b> to read mod jars directly in the
-      browser and generate the exported datapack as a downloadable zip. Nothing is uploaded anywhere —
-      every mod jar you load stays entirely on your machine.
+      Single HTML file, vanilla JS, no build step. Uses <b style="color:var(--gold)">JSZip</b> to read
+      mod jars directly in the browser and generate the exported datapack as a downloadable zip.
+      Nothing is uploaded anywhere — every mod jar you load stays entirely on your machine.
     </p>
   </section>
 
-  <div class="todo">
-    <b>// TODO(leymo):</b> drop in a screenshot or short screen-recording of the item recipe browser
-    and the crafting-grid view here, and link the real GitHub repo if you publish the source.
-  </div>
-
-  <footer class="site-footer">
-    <span class="fine">mc_override // status: active</span>
-    <div class="footer-links">
-      <a href="../index.html">&larr; back home</a>
-    </div>
+  <footer>
+    <span class="fine">e=mc^e // status: active</span>
+    <a class="pixel-btn" href="../index.html">&larr; back home</a>
   </footer>
 </div>
 
