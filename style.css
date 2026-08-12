@@ -19,6 +19,8 @@
   --gold-glow: rgba(217,164,65,.35);
   --teal: #17d6c4;
   --teal-glow: rgba(23,214,196,.32);
+  --spotify: #1DB954;
+  --spotify-glow: rgba(29,185,84,.3);
   --radius: 10px;
   --mono: 'JetBrains Mono', 'Consolas', monospace;
   --sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
@@ -189,6 +191,39 @@ img{max-width:100%;display:block}
 .footer-links{display:flex;gap:18px;font-family:var(--mono);font-size:13px}
 .footer-links a{text-decoration:none;color:var(--text-dim);transition:color .15s}
 .footer-links a:hover{color:var(--gold)}
+
+/* ---------- Now Playing ---------- */
+.np-card{
+  display:flex;align-items:center;gap:16px;background:var(--bg-elev);
+  border:1px solid var(--border-soft);border-radius:var(--radius);padding:14px 18px;
+  max-width:480px;transition:border-color .2s ease;
+}
+.np-card.is-playing{border-color:var(--spotify)}
+.np-art-wrap{position:relative;width:52px;height:52px;flex-shrink:0}
+.np-art{width:52px;height:52px;border-radius:6px;object-fit:cover;background:var(--bg-elev-2);display:block}
+.np-bars{
+  position:absolute;bottom:4px;right:4px;display:none;gap:2px;align-items:flex-end;
+  background:rgba(0,0,0,.55);padding:3px 4px;border-radius:4px;height:12px;
+}
+.np-bars.playing{display:flex}
+.np-bars span{width:2.5px;background:var(--spotify);border-radius:1px;animation:npbar 1s ease-in-out infinite}
+.np-bars span:nth-child(1){height:5px;animation-delay:0s}
+.np-bars span:nth-child(2){height:9px;animation-delay:.2s}
+.np-bars span:nth-child(3){height:6px;animation-delay:.4s}
+@keyframes npbar{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.np-info{min-width:0;flex:1}
+.np-status{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-faint);margin-bottom:4px;
+}
+.np-card.is-playing .np-status{color:var(--spotify)}
+.np-track{font-size:14.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-artist{font-size:13px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-link{
+  flex-shrink:0;font-family:var(--mono);font-size:11.5px;color:var(--text-dim);text-decoration:none;
+  border:1px solid var(--border);padding:6px 11px;border-radius:6px;transition:color .15s,border-color .15s;
+}
+.np-link:hover{color:var(--spotify);border-color:var(--spotify)}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
