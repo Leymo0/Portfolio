@@ -1,507 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roll for the Enemy — custom lobby champion assigner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --ink:#171128;
-  --ink-2:#211838;
-  --surface:#2A1F49;
-  --line:#3E2F66;
-  --text:#EFE9FF;
-  --muted:#9E90C4;
-  --safe:#48D9C4;
-  --spicy:#FF5B8F;
-  --chaos:#FFC24B;
-  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
-  --body:"IBM Plex Sans",system-ui,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,monospace;
-}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{
-  background:
-    radial-gradient(1100px 520px at 12% -8%, #33235C 0%, transparent 62%),
-    radial-gradient(900px 480px at 92% 4%, #2B2050 0%, transparent 60%),
-    var(--ink);
-  color:var(--text);font-family:var(--body);font-size:16px;line-height:1.5;
-  min-height:100vh;padding:28px 20px 72px;
-}
-.wrap{max-width:1060px;margin:0 auto}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
-h1{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(46px,10vw,96px);line-height:.86;letter-spacing:-.015em;margin:0 0 14px}
-h1 em{font-style:normal;color:var(--spicy)}
-.lede{max-width:56ch;color:var(--muted);margin:0 0 34px;font-size:15px}
-.label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:12px;margin:0 0 12px}
-.label::after{content:"";flex:1;height:1px;background:var(--line)}
-
-.roles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:26px}
-.role{background:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:14px 10px 11px;cursor:pointer;color:var(--text);text-align:left;transition:border-color .15s,background .15s,transform .12s}
-.role:hover{border-color:#5B4791;transform:translateY(-2px)}
-.role .rn{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:26px;line-height:1;display:block}
-.role .rc{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.08em}
-.role[aria-pressed="true"]{background:var(--surface);border-color:var(--safe)}
-.role[aria-pressed="true"] .rc{color:var(--safe)}
-
-.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:26px}
-.chips{display:flex;flex-wrap:wrap;gap:4px;background:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px}
-.chip{border:0;background:transparent;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:7px 13px;border-radius:999px;transition:background .15s,color .15s}
-.chip[aria-pressed="true"]{background:var(--surface);color:var(--text)}
-.chip[data-f="c"][aria-pressed="true"]{color:var(--chaos)}
-.chip[data-f="x"][aria-pressed="true"]{color:var(--spicy)}
-.toggle{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;user-select:none}
-.toggle input{accent-color:var(--safe);width:15px;height:15px;cursor:pointer}
-.roll{margin-left:auto;border:0;cursor:pointer;background:var(--safe);color:#0F0B1C;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:23px;padding:11px 30px 9px;border-radius:8px;transition:filter .15s,transform .12s}
-.roll:hover{filter:brightness(1.12)}
-.roll:active{transform:translateY(1px)}
-.roll:disabled{opacity:.45;cursor:not-allowed}
-
-.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-.card{position:relative;overflow:hidden;background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:20px 18px 18px;min-height:280px;display:flex;flex-direction:column}
-.card.empty{border-style:dashed;align-items:center;justify-content:center;color:#6B5C93;min-height:200px}
-.card.empty span{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
-.tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;align-self:flex-start;padding:3px 9px;border-radius:4px;margin-bottom:14px}
-.tag.s{background:rgba(72,217,196,.14);color:var(--safe)}
-.tag.x{background:rgba(255,91,143,.15);color:var(--spicy)}
-.tag.c{background:rgba(255,194,75,.14);color:var(--chaos)}
-.name{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(30px,4.4vw,44px);line-height:.92;letter-spacing:-.01em;margin:0 0 10px;word-break:break-word}
-.note{color:var(--muted);font-size:13.5px;margin:0 0 16px;flex:1}
-.item{border:1px solid var(--line);border-left:3px solid var(--chaos);border-radius:7px;padding:10px 12px;margin-bottom:12px;background:rgba(0,0,0,.18)}
-.item .ih{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
-.item .iname{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:21px;line-height:1.05}
-.reroll{border:0;background:transparent;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
-.reroll:hover{color:var(--chaos)}
-.assign{border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:9px 0;border-radius:7px;width:100%;transition:background .15s,border-color .15s}
-.assign:hover{background:var(--surface);border-color:#5B4791}
-.card.spinning .name,.card.spinning .iname{color:#7E6BB8}
-.card.spinning .assign,.card.spinning .reroll{opacity:.3;pointer-events:none}
-.card.taken{border-color:var(--safe)}
-.card.taken .assign,.card.taken .reroll{display:none}
-.card.faded{opacity:.42}
-.stamp{position:absolute;right:-26px;top:20px;transform:rotate(28deg);font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:20px;letter-spacing:.14em;color:#0F0B1C;background:var(--safe);padding:5px 34px}
-.hint{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);min-height:18px;margin:0 0 34px}
-.hint b{color:var(--text);font-weight:600}
-
-.log{list-style:none;margin:0 0 12px;padding:0;border-top:1px solid var(--line)}
-.log li{display:flex;align-items:baseline;gap:14px;padding:11px 2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.log .lr{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);width:76px;flex:none;text-transform:uppercase}
-.log .ln{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:22px;line-height:1}
-.log .li2{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.log .lt{font-family:var(--mono);font-size:10px;letter-spacing:.14em;margin-left:auto;text-transform:uppercase}
-.log .lt.s{color:var(--safe)}.log .lt.x{color:var(--spicy)}.log .lt.c{color:var(--chaos)}
-.empty-log{color:var(--muted);font-size:13.5px;margin:0 0 12px}
-.clear{border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:8px 16px;border-radius:7px}
-.clear:hover{color:var(--text);border-color:#5B4791}
-
-.rule-list{list-style:none;margin:0 0 34px;padding:0;max-width:64ch;display:flex;flex-direction:column;gap:10px}
-.rule-list li{background:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
-.rule-list b{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--safe);display:block;margin-bottom:4px}
-.rule-list span{color:var(--muted);font-size:13.5px;line-height:1.5}
-:focus-visible{outline:2px solid var(--safe);outline-offset:3px}
-
-/* ---------- team shuffle ---------- */
-.shuffle-box{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:20px 20px 22px;margin-bottom:34px}
-.player-inputs{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
-.player-row{display:flex;align-items:center;gap:8px}
-.player-row input{flex:1;background:var(--ink);border:1px solid var(--line);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13.5px;padding:11px 13px}
-.player-row input:focus{outline:none;border-color:var(--safe)}
-.player-row .rm{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:8px 11px;border-radius:6px;transition:color .15s,background .15s}
-.player-row .rm:hover{color:var(--spicy);background:rgba(255,91,143,.12)}
-.add-player-btn{border:1px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;border-radius:8px;width:100%;transition:border-color .15s,color .15s}
-.add-player-btn:hover{border-color:var(--safe);color:var(--text)}
-.add-player-btn:disabled{opacity:.4;cursor:not-allowed;border-style:solid}
-.shuffle-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
-.shuffle-btn{border:0;cursor:pointer;background:var(--chaos);color:#231A05;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:20px;padding:10px 26px 8px;border-radius:8px;transition:filter .15s,transform .12s}
-.shuffle-btn:hover{filter:brightness(1.1)}
-.shuffle-btn:active{transform:translateY(1px)}
-.shuffle-hint{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:0}
-.shuffle-hint b{color:var(--text)}
-
-.teams-result{margin-top:26px}
-.team-headers{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-bottom:18px}
-.team-name{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(22px,4vw,32px);line-height:1;letter-spacing:-.01em}
-.team-name.t1{color:var(--safe);text-align:right}
-.team-name.t2{color:var(--spicy);text-align:left}
-.vs-mark{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--muted)}
-
-.matchup{list-style:none;margin:0;padding:0}
-.matchup li{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s ease}
-.matchup li.show{opacity:1;transform:none}
-.matchup li:last-child{border-bottom:0}
-.mp{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(20px,3.4vw,28px);line-height:1;word-break:break-word}
-.mp.left{text-align:right;color:var(--text)}
-.mp.right{text-align:left;color:var(--text)}
-.mp.empty{color:var(--muted);font-family:var(--mono);font-size:13px;font-weight:400;text-transform:none}
-.mp-role{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--chaos);text-align:center;white-space:nowrap}
-.mp.spin{color:#7E6BB8}
-
-@media (max-width:820px){
-  .roles{grid-template-columns:repeat(3,1fr)}
-  .slots{grid-template-columns:1fr}
-  .card{min-height:0}
-  .roll{margin-left:0;width:100%}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-</style>
+<title>Roll for the Enemy — LEYMO_</title>
+<link rel="stylesheet" href="../style.css">
 </head>
 <body>
+
 <div class="wrap">
+  <header class="site-header">
+    <a class="back-link" href="../index.html">&larr; all projects</a>
+  </header>
 
-  <p class="eyebrow">Custom lobby · you draft for them</p>
-  <h1>Roll for<br>the <em>enemy</em></h1>
-  <p class="lede">Pick a role, roll three champions, hand one to the player you're drafting for. Safe and spicy picks all work in that lane. Chaos picks do not — that's the whole point of them — and everyone gets a mandatory first legendary item on top. A mixed roll never serves more than one spicy or chaos card, so there's always a way out.</p>
-
-  <p class="label">Running this as a full 2-team draft</p>
-  <p class="lede" style="max-width:64ch">
-    This tool rolls for one lane at a time — to draft a full 5v5 with it, both teams just take turns
-    using it manually, role by role. Go in role order: <b style="color:var(--text)">Top → Jungle → Mid → ADC → Support</b>.
-    For each role, that lane's two players pick for <i>each other</i> on this tool — you roll a
-    champion for your opponent in the same role, and they roll one for you. Who rolls first
-    alternates as you move down the role order, so it stays fair over a full draft:
-  </p>
-  <ul class="rule-list">
-    <li><b>Top</b><span>Team 1's top laner rolls first — for Team 2's top laner. Then Team 2's top laner rolls for Team 1's top laner.</span></li>
-    <li><b>Jungle</b><span>Turn to roll first flips: Team 2's jungler rolls for Team 1's jungler, then Team 1's jungler rolls for Team 2's.</span></li>
-    <li><b>Mid → ADC → Support</b><span>Keep alternating who rolls first, role by role, all the way down. Whoever didn't open the last role opens this one.</span></li>
-  </ul>
-
-  <p class="label">0 — Shuffle the lobby (optional)</p>
-  <div class="shuffle-box">
-    <div class="player-inputs" id="playerInputs"></div>
-    <button class="add-player-btn" id="addPlayerBtn" type="button">+ Add player</button>
-    <div class="shuffle-row">
-      <button class="shuffle-btn" id="shuffleBtn">Shuffle teams &amp; roles</button>
-      <p class="shuffle-hint" id="shuffleHint">Splits everyone into two teams and hands out Top / Jungle / Mid / ADC / Support at random. 2–10 players.</p>
+  <section class="hero">
+    <span class="eyebrow">tool::draft_roulette — league of legends</span>
+    <h1>Roll for <span class="accent" style="color:var(--teal)">the Enemy</span></h1>
+    <p class="lede">A draft randomizer for private lobbies: you don't pick for yourself, you roll a champion and hand it to whoever you're drafting for — with tiered pools, forced item builds, and rules for running a full 5v5 with it.</p>
+    <div class="btn-row">
+      <a class="btn teal" href="../tools/roll-for-the-enemy.html">Launch the tool &rarr;</a>
+      <span class="pill"><span class="pulse" style="background:var(--teal)"></span>rebuilt twice, still tinkering</span>
     </div>
-    <div class="teams-result" id="teamsResult" hidden>
-      <div class="team-headers">
-        <div class="team-name t1" id="team1Name"></div>
-        <div class="vs-mark">VS</div>
-        <div class="team-name t2" id="team2Name"></div>
-      </div>
-      <ul class="matchup" id="matchupList"></ul>
+  </section>
+
+  <section class="section">
+    <h2>// the idea</h2>
+    <p>
+      Normal draft in a private lobby gets stale fast — everyone reaches for the same handful of
+      champions. This flips it: you roll for your <i>opponent</i> in the same role, not for yourself.
+      Pick a role, roll three champions, hand one over. Safe and spicy rolls all work fine in that
+      lane. Chaos rolls don't — that's the entire point of them — and every roll comes with a
+      mandatory first legendary item on top, so the challenge isn't just "what do I play," it's
+      "how do I make this work."
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>// how it works</h2>
+    <ul class="feature-list">
+      <li><span class="dot"></span><div>
+        <b>Three tiers per role</b>
+        <span><b style="color:var(--text)">Safe</b> — solid, straightforward in that lane. <b style="color:var(--text)">Spicy</b> — off-meta but playable. <b style="color:var(--text)">Chaos</b> — deliberately bad in that specific lane, on purpose.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Five pool filters</b>
+        <span>Standard mixes safe and spicy with the occasional chaos pick slipped in. Or lock the roll to purely Safe, Spicy, Chaos, or full Mayhem across all three.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Mandatory first-item roll</b>
+        <span>Every champion comes with a required first legendary alongside it — toggleable if you just want the champion pressure without the build constraint.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>No-repeats tracking</b>
+        <span>Once a champion's been handed off, it's out of the pool for that role until you clear the list — keeps a full draft from repeating picks.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>A running draft log</b>
+        <span>Every assigned pick gets logged with its role, tier, and item — so you can read the whole draft back at the end of the session.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Rules for a full 5v5</b>
+        <span>The tool itself only rolls one lane at a time — the page explains how both teams use it together, alternating who rolls first as you move down the role order, so a full team draft stays fair.</span>
+      </div></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>// status</h2>
+    <p>
+      Rebuilt twice as the tiering and roll rules got refined — the current version adds
+      <b>Locke</b> as a safe-tier pick across every role, alongside the standard champion pool.
+      Single HTML file, no build step, same philosophy as the rest of what's on this site.
+    </p>
+  </section>
+
+  <footer class="site-footer">
+    <span class="fine">draft_roulette // status: active</span>
+    <div class="footer-links">
+      <a href="../index.html">&larr; back home</a>
     </div>
-  </div>
-
-  <p class="label">1 — Choose the role</p>
-  <div class="roles" id="roles"></div>
-
-  <p class="label">2 — Set the rules</p>
-  <div class="controls">
-    <div class="chips" role="group" aria-label="Pick pool">
-      <button class="chip" data-f="sx" aria-pressed="true">Standard</button>
-      <button class="chip" data-f="s" aria-pressed="false">Safe</button>
-      <button class="chip" data-f="x" aria-pressed="false">Spicy</button>
-      <button class="chip" data-f="c" aria-pressed="false">Chaos</button>
-      <button class="chip" data-f="all" aria-pressed="false">Mayhem</button>
-    </div>
-    <label class="toggle"><input type="checkbox" id="norepeat" checked> No repeats</label>
-    <label class="toggle"><input type="checkbox" id="itemon" checked> Force an item</label>
-    <button class="roll" id="rollBtn">Roll three</button>
-  </div>
-
-  <p class="label">3 — Give them one</p>
-  <div class="slots" id="slots" aria-live="polite"></div>
-  <p class="hint" id="hint"></p>
-
-  <p class="label">Assigned so far</p>
-  <ul class="log" id="log"></ul>
-  <p class="empty-log" id="emptyLog">Nothing assigned yet. Locked picks show up here so you can read the whole draft out at the end.</p>
-  <button class="clear" id="clearBtn" hidden>Clear the list</button>
-
+  </footer>
 </div>
 
-<script>
-/* ---------- champions: [name, tier, note]  tier: s = safe, x = spicy, c = chaos ---------- */
-const D = {
-top:[
-["Aatrox","s","Drain-tank bruiser, always fine"],["Darius","s","Wins the lane by walking forward"],["Garen","s","Silence, spin, execute"],["Sett","s","Punches first, thinks never"],["Mordekaiser","s","Deletes one person in the death realm"],["Camille","s","Hookshot dives, late-game monster"],["Fiora","s","Duels almost anything with practice"],["Jax","s","Scales into a 1v9 machine"],["Irelia","s","Snowballs hard off one kill"],["Riven","s","High skill ceiling, huge payoff"],["Renekton","s","Bully early, force the lead"],["Gwen","s","Mist makes her untouchable"],["Yorick","s","Splitpush with a free army"],["Illaoi","s","One E and the lane ends"],["Urgot","s","Chomps anybody under 25% HP"],["Volibear","s","Dive machine, shuts off towers"],["Ornn","s","Free upgrades for the whole team"],["Malphite","s","Point-and-click fight winner"],["Sion","s","Dies, comes back, dies again, fine"],["Shen","s","Global ult saves the bot lane"],["Maokai","s","Saplings and endless CC"],["K'Sante","s","Tank in lane, duelist in fights"],["Gragas","s","Barrel roll into everything"],["Cho'Gath","s","Eats people, gets enormous"],["Dr. Mundo","s","Goes where he pleases"],["Tahm Kench","s","Eats an enemy, eats an ally"],["Poppy","s","Cancels every dash in the game"],["Rumble","s","Equalizer flips fights alone"],["Gangplank","s","Barrels for days once he scales"],["Jayce","s","Poke bully, ranged and melee"],["Kled","s","Two health bars, global charge"],["Olaf","s","Ults and becomes unstoppable"],["Trundle","s","Steals tank stats, walls fights off"],["Nasus","s","Farm stacks, end careers"],["Wukong","s","Clone tricks, big knockup ult"],["Kayle","s","Miserable early, unkillable at 16"],["Ambessa","s","Chain-dash bruiser, heavy damage"],["Warwick","s","Sustains through anything, dive ult"],["Sylas","s","Steals their tank ult in lane"],["Jarvan IV","s","Flag-drag combo bully"],["Vladimir","s","Pool through everything, scale forever"],["Aurora","s","Blink kit with a wall that splits fights"],["Teemo","x","Blind the bruiser, mushroom the jungle"],["Singed","x","Proxies farm, runs laps in your base"],["Vayne","x","Ranged tank shredder, feels illegal"],["Quinn","x","Ranged bully with a roaming ult"],["Kennen","x","Poke lane, then flash-ult a fight"],["Akali","x","Shroud plays win the sidelane"],["Yasuo","x","Windwall the ranged matchups"],["Yone","x","Bruiser stats on an assassin kit"],["Pantheon","x","Free early kills, global ult"],["Rengar","x","Bush leaps on anyone squishy"],["Zac","x","Sticky blob tank, huge engage"],["Heimerdinger","x","Turret jail, genuinely unbeatable lanes"],["Swain","x","Sustain lane, ult heals through fights"],["Tryndamere","x","Can't die for five seconds, ever"],["Lillia","x","Kites the lane, sleeps the dive"],["Neeko","x","Disguise cheese and a huge stun"],["Karma","x","Poke lane bully, shields the dive"],["Ryze","x","Farms safe, ults the team to the fight"],["Cassiopeia","x","No boots, grounds every bruiser"],["Zilean","x","Bomb stuns, revives himself in a dive"],["Twisted Fate","c","No trading tools, gets perma-dived"],["Sona","c","Melee bruisers walk her down at level 1"],["Soraka","c","Heals nothing when she's the one dying"],["Yuumi","c","Nobody to attach to. It's just her"],["Janna","c","No wave clear, no kill pressure, no hope"],["Nami","c","Bubble, then get punched to death"],["Milio","c","A support with nobody to support"],["Bard","c","Wanders off, loses the lane, loses the game"],["Kalista","c","Melee range punishes every hop"],["Aphelios","c","Zero early damage into a bruiser"],["Zeri","c","Runs fast, dies faster in the sidelane"],["Kog'Maw","c","Legs of a snail in a duelist lane"],["Draven","c","Catch axes while Darius catches you"],["Blitzcrank","c","Hook, miss, get executed"],["Amumu","c","Cries alone under his tower"],["Rakan","c","All the engage, none of the damage"],["Renata Glasc","c","Ults an empty sidelane"],["Nunu & Willump","c","No wave clear, snowballs into a wall"],["Ivern","c","Grows a bush, gets Darius-dunked"],["Taric","c","Stuns them, then can't kill them"],["Locke","s","Solid stats, no bad matchups"]
-],
-jungle:[
-["Viego","s","Possesses a corpse and resets the fight"],["Lee Sin","s","Early ganks and insertion kicks"],["Kha'Zix","s","Isolated targets simply vanish"],["Hecarim","s","Runs people down at mach speed"],["Jarvan IV","s","Flag-drag knockup, ult cage"],["Vi","s","Point-and-click ult on the carry"],["Xin Zhao","s","Early skirmish king"],["Nidalee","s","Fastest clear, spear sniping"],["Graves","s","Farms fast, hits like a truck"],["Kindred","s","Stacks marks, ult denies a kill"],["Kayn","s","Picks his form based on the enemy"],["Rengar","s","Bush leap on the ADC"],["Elise","s","Rappel cheese, heavy early ganks"],["Evelynn","s","Invisible until you're already dead"],["Diana","s","Ult pulls a whole team together"],["Ekko","s","Rewinds out of any bad fight"],["Fiddlesticks","s","Ults from a bush, everyone panics"],["Amumu","s","Bandage into a five-man stun"],["Sejuani","s","Frostbite chains, unkillable frontline"],["Zac","s","Long-range slingshot ganks"],["Maokai","s","Sapling ganks, giant root ult"],["Nunu & Willump","s","Snowball roulette, objective thief"],["Rammus","s","OK. Rolls in, taunts, wins"],["Warwick","s","Sniffs low HP, suppresses them"],["Udyr","s","Stance-dance skirmisher, fast clear"],["Volibear","s","Dives towers on cooldown"],["Trundle","s","Objective control with pillar plays"],["Skarner","s","Drags people away from their team"],["Shyvana","s","Dragon dive, fastest farming"],["Master Yi","s","Alpha strike resets, ends games"],["Briar","s","Loses control and eats somebody"],["Bel'Veth","s","True form scaling, endless dashes"],["Nocturne","s","Fear plus a darkness ult pick"],["Lillia","s","Sleeps the entire enemy team"],["Wukong","s","Clone engage, huge ult knockup"],["Gragas","s","Body slam into barrel combos"],["Poppy","s","Anti-dive, ult sends people home"],["Rek'Sai","s","Tunnel pressure, knockup ganks"],["Karthus","s","Global ult snipes across the map"],["Talon","s","Hops walls, deletes the mid laner"],["Olaf","s","Unstoppable ult, dives anyone"],["Jax","s","Counterstrike duels, scales forever"],["Nautilus","s","Hook ganks, chain CC on the carry"],["Zed","s","Full-clear then delete a squishy"],["Kled","s","Global ult into a lane gank"],["Shaco","x","AP boxes everywhere, still very strong"],["Ivern","x","Free camps, shields, and a tree friend"],["Twitch","x","Invisible ganks from the river"],["Zyra","x","Plants clear camps and lock down ganks"],["Brand","x","Passive burns camps, ult bounces forever"],["Morgana","x","Root ganks, spellshield for the team"],["Sylas","x","Steals the enemy ult mid-fight"],["Nasus","x","Wither the carry, stack in peace"],["Pantheon","x","Level-two ganks, global ult later"],["Taliyah","x","Wall-ride ganks and big roams"],["Gwen","x","Fast healthy clear, snowbally duels"],["Teemo","x","Mushrooms every camp and river bush"],["Mordekaiser","x","Isolates one target, wins that 1v1"],["Swain","x","Sustains through camps, pulls in fights"],["Neeko","x","Disguised as a minion, then engages"],["Yorick","x","Ghouls clear camps, splitpushes after"],["Fizz","x","Untargetable ganks, shark ult"],["Illaoi","x","Slow clear, but nobody survives an E"],["Kalista","c","Hops between camps, kills none"],["Samira","c","No style points from a krug"],["Nilah","c","Melee ADC, no jungle sustain"],["Vayne","c","Tumbles into raptors, dies to them"],["Lux","c","Binds a wolf, clears at minute ten"],["Alistar","c","Headbutts the buff into the wall"],["Rell","c","Engages a camp, has no clear"],["Braum","c","Blocks nothing, kills nothing"],["Taric","c","Full clear takes until minute nine"],["Aphelios","c","Guns don't clear jungle camps"],["Jinx","c","Bad clear, worse ganks, great mental"],["Caitlyn","c","Traps at Scuttle and a lost early game"],["Jhin","c","Four bullets, zero camps cleared"],["Draven","c","Axes in the jungle, gold in their pocket"],["Xayah","c","Feathers can't gank a warded lane"],["Sivir","c","Clears okay, then does nothing forever"],["Anivia","c","Wall the camp, still lose to it"],["Orianna","c","Ball goes in the camp. Camp wins"],["Azir","c","Soldiers can't tank raptors"],["Veigar","c","Stacks by minute 30, game ends at 22"],["Blitzcrank","c","Hooks a wolf, cries"],["Leona","c","No damage, no clear, all commitment"],["Garen","c","No sustain, spins into a grey screen"],["Darius","c","Dies to the first raptor camp"],["Locke","s","Clean clear, ganks on time"]
-],
-mid:[
-["Ahri","s","Charm, burst, three dashes out"],["Syndra","s","Sphere combo one-shots squishies"],["Orianna","s","Ball delivery wins teamfights"],["Azir","s","Soldiers and the shuffle ult"],["Viktor","s","Scales into a laser fortress"],["Cassiopeia","s","Grounds dashes, melts frontlines"],["Anivia","s","Wall splits fights in half"],["Corki","s","Package engage, poke forever"],["Zoe","s","Bubble from three screens away"],["Lux","s","Simple, safe, huge burst laser"],["Veigar","s","Infinite AP and a stun cage"],["Annie","s","Tibbers deletes someone instantly"],["Malzahar","s","Point-and-click suppress on the carry"],["Vex","s","Punishes every dash in the game"],["Hwei","s","Ten spells, endless combos"],["Taliyah","s","Roams with wall-ride pressure"],["Ryze","s","Ult teleports the whole team"],["Xerath","s","Artillery from outside their range"],["Vel'Koz","s","True damage ult melts anyone"],["Aurelion Sol","s","Stacks until he's a black hole"],["Twisted Fate","s","Gold card pick, global roams"],["Neeko","s","Disguised engage, huge stun ult"],["Sylas","s","Steals their best ultimate"],["LeBlanc","s","Deletes a squishy and vanishes"],["Katarina","s","Resets and wipes the fight"],["Fizz","s","Untargetable, then shark ult"],["Ekko","s","Rewind after diving the backline"],["Akali","s","Shroud, dash, execute"],["Talon","s","Roams over walls constantly"],["Zed","s","Ult mark burst on the carry"],["Qiyana","s","Wall-slam stun into a whole team"],["Yone","s","Two dashes, fight-ending ult"],["Yasuo","s","Windwall, then dash off a knockup"],["Irelia","s","Snowballs off any early lead"],["Naafiri","s","Dog pack dives the backline"],["Tristana","s","Jumps in, ult knocks them away"],["Kassadin","s","Unplayable early, unstoppable at 16"],["Diana","s","Ult pulls three people together"],["Galio","s","Global ult saves any lane"],["Lissandra","s","Self-ult, then freeze their carry"],["Swain","s","Pulls people in and drains them"],["Vladimir","s","Pool out, scale into a monster"],["Aurora","s","Blink kit, fight-splitting wall"],["Ziggs","s","Pushes waves, chunks towers"],["Ahri","s","Charm, burst, three dashes out"],["Viego","s","Resets in every skirmish"],["Jayce","s","Poke them out of lane by minute six"],["Smolder","s","Stacks safely, executes late"],["Heimerdinger","x","Turrets make the lane unplayable"],["Pantheon","x","Free kills early, global ult roams"],["Brand","x","Passive shreds, ult bounces the team"],["Karthus","x","Farms mid, snipes bot lane kills"],["Morgana","x","Root, spellshield, big teamfight ult"],["Zilean","x","Double bomb stun, revives the carry"],["Gragas","x","Body slam engage from mid"],["Singed","x","Runs mid in circles, somehow wins"],["Garen","x","Silence and execute, real cheese"],["Mordekaiser","x","Isolates the mid laner, wins the 1v1"],["Kayle","x","Late-game hypercarry from mid"],["Seraphine","x","Poke, heal, giant charm ult"],["Nunu & Willump","x","Perma-roam, steals every objective"],["Rumble","x","Poke lane, Equalizer teamfights"],["Malphite","x","AP Malphite one-shots the mid laner"],["Wukong","x","Clone cheese, ult wins fights"],["Fiddlesticks","x","Silence lane, ult from the sidebush"],["Lulu","x","Poke and polymorph the assassin"],["Ivern","c","Grows bushes while they push mid"],["Yuumi","c","No wave clear, no laner, no point"],["Soraka","c","Farms with Q, wins nothing"],["Janna","c","Cannot kill a cannon minion, or anyone"],["Nami","c","Bubbles alone in the river"],["Braum","c","Blocks a poke, still loses the lane"],["Alistar","c","Headbutts them into their own tower"],["Blitzcrank","c","One hook per minute, no wave clear"],["Thresh","c","Souls stack, damage doesn't"],["Leona","c","All-in, get burst, walk back"],["Nautilus","c","No push, no scaling, no fun"],["Rell","c","Engages a mid laner who just blinks away"],["Taric","c","Stuns and stalls, wins nothing"],["Tahm Kench","c","Eats himself out of yet another loss"],["Nasus","c","Stacks against a ranged mage. Good luck"],["Yorick","c","Ghouls push mid, he loses every trade"],["Skarner","c","Slow, melee, no range, no chance"],["Kalista","c","Hops backwards for twenty minutes"],["Kog'Maw","c","Melted by every assassin in the game"],["Ornn","c","Free items, zero mid pressure"],["Milio","c","Fire, warmth, defeat"],["Locke","s","Never loses lane, never wins it big"]
-],
-adc:[
-["Jinx","s","Resets and takes over the game"],["Caitlyn","s","Longest range, trap combos"],["Kai'Sa","s","Evolves and dives the backline"],["Ezreal","s","Safe poke, blinks out of everything"],["Jhin","s","Four bullets, huge crits, big ult"],["Ashe","s","Slows everything, global stun arrow"],["Miss Fortune","s","Ult wipes a clumped teamfight"],["Xayah","s","Feathers root, ult dodges everything"],["Zeri","s","Never stops moving, wall jumps"],["Aphelios","s","Five guns, ridiculous damage"],["Vayne","s","Tumbles and shreds every tank"],["Twitch","s","Invisible, then hits the whole team"],["Draven","s","Catch axes, snowball the lane"],["Lucian","s","Double shots and endless dashes"],["Tristana","s","Jump, reset, tower dive"],["Kog'Maw","s","Slowest legs, fastest melting"],["Sivir","s","Spellshield and a team speed ult"],["Varus","s","Poke chains, root ult combos"],["Samira","s","Style combo into a whole-team ult"],["Nilah","s","Melee ADC, shares every heal"],["Smolder","s","Stack scales, execute damage"],["Corki","s","Poke and a delivery package"],["Kalista","s","Hops constantly, ult saves the support"],["Senna","s","Ranged support-carry hybrid"],["Seraphine","s","Poke, heal, charm the enemy team"],["Graves","s","Shotgun burst, works fine bot"],["Ziggs","x","Was literally a meta ADC, still great"],["Swain","x","Drain tank bot with an enchanter"],["Yasuo","x","Pair with a knockup support, chaos"],["Yone","x","Bruiser bot lane, real damage"],["Karthus","x","Global ult from the bot side"],["Cassiopeia","x","Farms hard, grounds every dash"],["Veigar","x","Cage the bot lane, infinite scaling"],["Heimerdinger","x","Turrets under tower, unkillable lane"],["Brand","x","Burns the lane down by minute 15"],["Syndra","x","Sphere burst on a squishy ADC"],["Lux","x","Binding into laser, easy kills"],["Morgana","x","Root, drain, spellshield the engage"],["Quinn","x","Blind, harass, roam with the ult"],["Kennen","x","Ranged poke, flash-ult teamfights"],["Sion","x","Q the whole wave, ult across the map"],["Pantheon","x","Free early kills bot, global later"],["Twisted Fate","x","Gold card lane, global map pressure"],["Hwei","x","Poke kit with painting combos"],["Xerath","x","Artillery bot, safe and annoying"],["Vel'Koz","x","Pokes the lane out of existence"],["Malzahar","x","Voidlings push, suppress the ADC"],["Teemo","x","Blind the ADC, mushrooms everywhere"],["Vladimir","x","Scales bot, pools every engage"],["Mel","x","Reflects spells back at the caster"],["Ahri","x","Charm bot lane, roams mid after"],["Neeko","x","Poke lane, then a five-man stun"],["Sona","c","Zero range, zero damage, all vibes"],["Ivern","c","Bushes don't farm minions"],["Taric","c","Stuns the enemy ADC, then loses to it"],["Alistar","c","Headbutts a minion wave for 20 minutes"],["Leona","c","Melee ADC with no damage at all"],["Nautilus","c","Hooks the wave, farms nothing"],["Rell","c","Engages solo, dies solo"],["Blitzcrank","c","One hook, then he's just a big man"],["Amumu","c","Cries as the enemy ADC farms freely"],["Rammus","c","OK. Rolls at them. Does no damage"],["Malphite","c","Ults their bot lane, then dies to it"],["Ornn","c","Forges items instead of farming"],["Sejuani","c","No range, no waveclear, no carry"],["Zac","c","Blob bot lane. Bounces. Dies"],["Nasus","c","Stacks a sidelane that isn't his"],["Dr. Mundo","c","Walks at them, gets kited forever"],["Yorick","c","Ghouls last-hit better than he does"],["Illaoi","c","Slams tentacles at an empty lane"],["Darius","c","Zero range in a ranged matchup"],["Garen","c","Spins at people two screens away"],["Udyr","c","Bear stance into the enemy tower"],["Warwick","c","Chases a Caitlyn. Forever"],["Volibear","c","Melee ADC gets poked out by minute five"],["Shen","c","Taunts them, deals no damage"],["Maokai","c","Sapling bot. That's the whole plan"],["Master Yi","c","Alpha strikes a minion, gets hooked"],["Kayn","c","No form, no farm, no future"],["Hecarim","c","Runs at them, runs back, no damage"],["Yuumi","c","Cat in the bot lane, alone"],["Soraka","c","Heals the wave to death slowly"],["Skarner","c","Drags a caster minion around"],["Locke","s","Steady damage, no flashy outs"]
-],
-support:[
-["Thresh","s","Hook, lantern, box — does everything"],["Nautilus","s","Hook plus guaranteed follow-up CC"],["Leona","s","Point-and-click all-in engage"],["Blitzcrank","s","One hook and the lane is over"],["Pyke","s","Executes and gives the team gold"],["Rakan","s","Charm engage, dashes back out"],["Alistar","s","Combo knockup, unkillable in ult"],["Braum","s","Blocks projectiles, huge stun wall"],["Rell","s","Massive engage and a magnet ult"],["Taric","s","Stun and a team-wide invulnerability"],["Poppy","s","Stops every dash engage"],["Maokai","s","Saplings, roots, huge ult"],["Zyra","s","Plants out-damage the ADC"],["Brand","s","Burns the enemy bot lane down"],["Xerath","s","Long-range poke, stun from fog"],["Vel'Koz","s","Pokes and true-damage ults"],["Swain","s","Pull, root, drain the whole fight"],["Morgana","s","Spellshield the hook, root the engage"],["Lux","s","Binding into burst damage"],["Karma","s","Poke, shield, speed the ADC up"],["Janna","s","Disengage everything, shields for days"],["Lulu","s","Makes the carry twice as big"],["Nami","s","Bubble, heal, and a speed ult"],["Sona","s","Heals the lane, ult stuns everyone"],["Soraka","s","Global heal, silence on engage"],["Yuumi","s","Attaches to the carry and never leaves"],["Seraphine","s","Heal, shield, giant charm ult"],["Milio","s","Range buff and a cleanse ult"],["Renata Glasc","s","Ult turns their team on itself"],["Senna","s","Ranged poke, global shield ult"],["Bard","s","Chimes, portals, and a stasis ult"],["Pantheon","s","Free early kills, global ult"],["Galio","s","Taunt engage, flies to any lane"],["Zilean","s","Double bomb stun, revive the ADC"],["Neeko","s","Disguises as your ADC, then engages"],["Amumu","s","Bandage into a five-man stun"],["Zac","s","Slingshot engage from the bush"],["Tahm Kench","s","Eats the carry out of danger"],["Sett","s","Punch, grab, slam the whole team"],["Shen","s","Taunt engage, global shield"],["Rakan","s","Charm engage, dashes back out"],["Nunu & Willump","s","Snowball engage, steals objectives"],["Shaco","x","Boxes their jungle, roams constantly"],["Fiddlesticks","x","Ults from a bush mid-fight, terrifying"],["Briar","x","Feral engage, dives the enemy carry"],["Ivern","x","Shields, a bush, and a Daisy engage"],["Camille","x","Hookshot engage, ult isolates the ADC"],["Malphite","x","Rock solid, ult wins the fight"],["Teemo","x","Blinds the ADC, mushrooms the river"],["Heimerdinger","x","Turrets siege the bot tower"],["Annie","x","Stun bear deletes the enemy support"],["Singed","x","Poison lane, flips their ADC to you"],["Trundle","x","Wall traps and a stat-stealing ult"],["Twitch","x","Roams invisible, ganks all three lanes"],["Sion","x","Ult from the tri-bush, real pick"],["Gragas","x","Barrel engage, fight-splitting ult"],["Ashe","x","Slows the lane down, global stun"],["Vi","x","Point-and-click ult on their carry"],["Veigar","x","Cages the bot lane at level three"],["Cho'Gath","x","Silence, knockup, and a true damage ult"],["Zed","c","Shadows can't peel, farms nothing"],["Master Yi","c","Meditates while his ADC dies"],["Katarina","c","No gold, no resets, no impact"],["Fiora","c","Vitals on a target she can't reach"],["Riven","c","Zero gold, zero scaling, zero peel"],["Jax","c","Late-game monster with 3k gold at 25"],["Nasus","c","Stacks in the bot lane. Somehow"],["Yorick","c","Maiden helps. He does not"],["Kayle","c","Level 16 arrives around minute 40"],["Tryndamere","c","Spins in, ults, still loses"],["Gwen","c","No items means no mist, no damage"],["Aatrox","c","Misses every sweet spot, dies"],["Darius","c","One hook away from being useless"],["Garen","c","Spins at a Caitlyn. Forever"],["Irelia","c","Needs items she'll never afford"],["Kled","c","Dismounts and stays dismounted"],["Olaf","c","Throws axes, has no gold, no chance"],["Dr. Mundo","c","Walks at them with nothing to show for it"],["Kassadin","c","Farmless Kassadin is just a blue man"],["Kha'Zix","c","Isolation checks fail next to your ADC"],["Talon","c","Roams away and leaves the ADC to die"],["Qiyana","c","Great ult, no gold to power it"],["Naafiri","c","Dogs can't ward the river"],["Viego","c","Resets on a corpse with no items"],["Graves","c","Steals the farm, ruins two lanes"],["Kindred","c","Marks nothing, does nothing"],["Nidalee","c","Spears from the bush, lands none"],["Bel'Veth","c","No jungle, no stacks, no form"],["Smolder","c","Stacks arrive around season two"],["Kai'Sa","c","No farm means no evolutions, ever"],["Jinx","c","Second ADC bot lane. Bold"],["Vayne","c","Melee-range Vayne with a support item"],["Cassiopeia","c","Farm-hungry mage with no farm"],["Azir","c","Soldiers cost gold he'll never have"],["Locke","s","Reliable peel, no wasted engages"]
-]};
-
-/* ---------- legendary items ---------- */
-const ITEMS=[
-["Infinity Edge","crit"],["Navori Flickerblade","crit"],["Phantom Dancer","crit"],["Rapid Firecannon","crit"],["Runaan's Hurricane","crit"],["Statikk Shiv","crit"],["The Collector","crit"],["Yun Tal Wildarrows","crit"],["Essence Reaver","crit"],["Bloodthirster","crit"],["Lord Dominik's Regards","crit"],["Mortal Reminder","crit"],["Kraken Slayer","crit"],["Immortal Shieldbow","crit"],
-["Blade of the Ruined King","fighter"],["Guinsoo's Rageblade","fighter"],["Wit's End","fighter"],["Nashor's Tooth","fighter"],["Trinity Force","fighter"],["Sundered Sky","fighter"],["Stridebreaker","fighter"],["Hullbreaker","fighter"],["Black Cleaver","fighter"],["Death's Dance","fighter"],["Sterak's Gage","fighter"],["Maw of Malmortius","fighter"],["Ravenous Hydra","fighter"],["Titanic Hydra","fighter"],["Experimental Hexplate","fighter"],["Spear of Shojin","fighter"],["Terminus","fighter"],["Overlord's Bloodmail","fighter"],
-["Youmuu's Ghostblade","lethality"],["Eclipse","lethality"],["Serpent's Fang","lethality"],["Serylda's Grudge","lethality"],["Edge of Night","lethality"],["Axiom Arc","lethality"],["Opportunity","lethality"],["Voltaic Cyclosword","lethality"],["Profane Hydra","lethality"],["Hubris","lethality"],["Umbral Glaive","lethality"],
-["Rabadon's Deathcap","ap"],["Zhonya's Hourglass","ap"],["Void Staff","ap"],["Shadowflame","ap"],["Horizon Focus","ap"],["Cryptbloom","ap"],["Liandry's Torment","ap"],["Riftmaker","ap"],["Rylai's Crystal Scepter","ap"],["Morellonomicon","ap"],["Lich Bane","ap"],["Banshee's Veil","ap"],["Cosmic Drive","ap"],["Stormsurge","ap"],["Malignance","ap"],["Blackfire Torch","ap"],["Hextech Rocketbelt","ap"],["Archangel's Staff","ap"],["Luden's Companion","ap"],["Mejai's Soulstealer","ap"],
-["Sunfire Aegis","tank"],["Heartsteel","tank"],["Frozen Heart","tank"],["Thornmail","tank"],["Randuin's Omen","tank"],["Spirit Visage","tank"],["Force of Nature","tank"],["Dead Man's Plate","tank"],["Warmog's Armor","tank"],["Jak'Sho, The Protean","tank"],["Unending Despair","tank"],["Kaenic Rookern","tank"],["Iceborn Gauntlet","tank"],["Abyssal Mask","tank"],["Gargoyle Stoneplate","tank"],["Guardian Angel","tank"],["Mercurial Scimitar","tank"],
-["Moonstone Renewer","enchanter"],["Echoes of Helia","enchanter"],["Redemption","enchanter"],["Ardent Censer","enchanter"],["Staff of Flowing Water","enchanter"],["Mikael's Blessing","enchanter"],["Imperial Mandate","enchanter"],["Dawncore","enchanter"],["Shurelya's Battlesong","enchanter"],["Locket of the Iron Solari","enchanter"],["Knight's Vow","enchanter"],["Zeke's Convergence","enchanter"]
-];
-
-const ROLES=[["top","Top"],["jungle","Jgl"],["mid","Mid"],["adc","ADC"],["support","Sup"]];
-const LABEL={top:"Top",jungle:"Jungle",mid:"Mid",adc:"ADC",support:"Support"};
-const TIER={s:"Safe pick",x:"Spicy pick",c:"Chaos pick"};
-
-// strip duplicate names within a role
-for(const k in D){const seen=new Set();D[k]=D[k].filter(c=>{const n=c[0].toLowerCase();if(seen.has(n))return false;seen.add(n);return true;});}
-
-let role="top", filt="sx", noRepeat=true, itemOn=true, used=new Set(), log=[], cards=[], spinning=false;
-
-const $=id=>document.getElementById(id);
-const rolesEl=$("roles"),slotsEl=$("slots"),hintEl=$("hint"),logEl=$("log"),
-      emptyLogEl=$("emptyLog"),clearBtn=$("clearBtn"),rollBtn=$("rollBtn");
-const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const rand=a=>a[Math.floor(Math.random()*a.length)];
-const sample=(a,n)=>{const c=a.slice(),o=[];while(o.length<n&&c.length)o.push(c.splice(Math.floor(Math.random()*c.length),1)[0]);return o;};
-const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-
-/* ---------- team shuffle ---------- */
-const TEAM_NAMES=["Team Krugs","Team Nerf Zed","Team Zhonya","Team Baron Steal","Team Int Feed",
-  "Team FF15","Team One Trick","Team Smurf Queue","Team Backdoor","Team Toplane Diff",
-  "Team Report Jungler","Team Elo Hell","Team Flash Fail","Team Wave Clear","Team Objective Bait",
-  "Team Tilt Proof","Team Split Push","Team Dive Bot","Team Peel Squad","Team Grubs Rush",
-  "Team Rift Herald","Team Ping Spammers","Team Ward Hunters","Team No Vision","Team Recall Late",
-  "Team Teleport Flank","Team Dragon Soul","Team Ace Squad","Team Clutch Or Kick","Team Mute All"];
-
-const playerInputsEl=$("playerInputs"),addPlayerBtn=$("addPlayerBtn"),shuffleBtn=$("shuffleBtn"),shuffleHintEl=$("shuffleHint"),
-      teamsResultEl=$("teamsResult"),team1NameEl=$("team1Name"),team2NameEl=$("team2Name"),
-      matchupListEl=$("matchupList");
-let shuffling=false;
-
-function renumberPlayerRows(){
-  [...playerInputsEl.children].forEach((row,i)=>{
-    row.querySelector("input").placeholder=`Player ${i+1}`;
-  });
-  addPlayerBtn.disabled=playerInputsEl.children.length>=10;
-  addPlayerBtn.textContent=playerInputsEl.children.length>=10?"Max 10 players":"+ Add player";
-}
-function addPlayerRow(){
-  if(playerInputsEl.children.length>=10)return;
-  const row=document.createElement("div");
-  row.className="player-row";
-  const input=document.createElement("input");
-  input.type="text";
-  input.placeholder=`Player ${playerInputsEl.children.length+1}`;
-  const rm=document.createElement("button");
-  rm.className="rm";rm.type="button";rm.setAttribute("aria-label","Remove player");rm.textContent="✕";
-  rm.onclick=()=>{row.remove();renumberPlayerRows();};
-  row.append(input,rm);
-  playerInputsEl.appendChild(row);
-  renumberPlayerRows();
-}
-addPlayerBtn.onclick=addPlayerRow;
-addPlayerRow();addPlayerRow();addPlayerRow();addPlayerRow(); // start with 4 blanks
-
-function getPlayers(){
-  return [...playerInputsEl.querySelectorAll("input")].map(i=>i.value.trim()).filter(Boolean).slice(0,10);
-}
-
-function doShuffle(){
-  if(shuffling)return;
-  const players=shuffle(getPlayers());
-  if(players.length<2){
-    shuffleHintEl.innerHTML="Fill in at least <b>2</b> player names, then shuffle.";
-    return;
-  }
-  const half=Math.ceil(players.length/2);
-  const team1=players.slice(0,half), team2=players.slice(half);
-  const [n1,n2]=shuffle(TEAM_NAMES.slice()).slice(0,2);
-
-  const roles1=shuffle(ROLES.map(r=>r[0])).slice(0,team1.length);
-  const roles2=shuffle(ROLES.map(r=>r[0])).slice(0,team2.length);
-  const map1={},map2={};
-  team1.forEach((p,i)=>map1[roles1[i]]=p);
-  team2.forEach((p,i)=>map2[roles2[i]]=p);
-
-  team1NameEl.textContent=n1;
-  team2NameEl.textContent=n2;
-  shuffleHintEl.innerHTML=`<b>${team1.length}v${team2.length}</b> — roles handed out at random per side.`;
-  teamsResultEl.hidden=false;
-
-  matchupListEl.innerHTML="";
-  const rows=ROLES.map(([k,short])=>({
-    role:k,label:LABEL[k],
-    left:map1[k]||null, right:map2[k]||null
-  }));
-  rows.forEach(r=>{
-    const li=document.createElement("li");
-    li.innerHTML=`<span class="mp left ${r.left?"":"empty"}">${r.left||"— no player —"}</span>`+
-      `<span class="mp-role">${r.label}</span>`+
-      `<span class="mp right ${r.right?"":"empty"}">${r.right||"— no player —"}</span>`;
-    matchupListEl.appendChild(li);
-  });
-
-  const allNames=players.slice();
-  const lis=[...matchupListEl.children];
-  if(reduced){lis.forEach(li=>li.classList.add("show"));return;}
-
-  shuffling=true;shuffleBtn.disabled=true;
-  lis.forEach((li,i)=>{
-    const left=li.querySelector(".mp.left"),right=li.querySelector(".mp.right");
-    const finalLeft=rows[i].left,finalRight=rows[i].right;
-    setTimeout(()=>{
-      li.classList.add("show");
-      if(finalLeft)left.classList.add("spin");
-      if(finalRight)right.classList.add("spin");
-      let spins=0;
-      const tick=setInterval(()=>{
-        if(finalLeft)left.textContent=rand(allNames);
-        if(finalRight)right.textContent=rand(allNames);
-        spins++;
-        if(spins>=7){
-          clearInterval(tick);
-          left.textContent=finalLeft||"— no player —";
-          right.textContent=finalRight||"— no player —";
-          left.classList.remove("spin");right.classList.remove("spin");
-          if(i===lis.length-1){shuffling=false;shuffleBtn.disabled=false;}
-        }
-      },70);
-    },i*550);
-  });
-}
-shuffleBtn.onclick=doShuffle;
-
-// enchanter legendaries are stripped out of jungle rolls
-const itemPool=()=>role==="jungle"?ITEMS.filter(i=>i[1]!=="enchanter"):ITEMS;
-
-// mixed pools serve at most one spicy-or-chaos card out of the three
-function pickThree(p){
-  const mixed=(filt==="sx"||filt==="all");
-  const safe=p.filter(c=>c[1]==="s"), hot=p.filter(c=>c[1]!=="s");
-  if(!mixed||safe.length<2)return sample(p,3);
-  const wantHot=(hot.length&&Math.random()<.7)?1:0;
-  return shuffle(sample(safe,3-wantHot).concat(wantHot?sample(hot,1):[]));
-}
-
-function pool(){
-  return D[role].filter(c=>{
-    if(filt==="s"&&c[1]!=="s")return false;
-    if(filt==="x"&&c[1]!=="x")return false;
-    if(filt==="c"&&c[1]!=="c")return false;
-    if(filt==="sx"&&c[1]==="c")return false;
-    if(noRepeat&&used.has(role+"|"+c[0]))return false;
-    return true;
-  });
-}
-
-function drawRoles(){
-  rolesEl.innerHTML="";
-  ROLES.forEach(([k,short])=>{
-    const n=D[k].length, c=D[k].filter(x=>x[1]==="c").length;
-    const b=document.createElement("button");
-    b.className="role";b.setAttribute("aria-pressed",String(k===role));
-    b.innerHTML=`<span class="rn">${short}</span><span class="rc">${n} champs · ${c} chaos</span>`;
-    b.onclick=()=>{if(spinning)return;role=k;cards=[];drawRoles();drawSlots();setHint("");};
-    rolesEl.appendChild(b);
-  });
-}
-
-function drawSlots(){
-  slotsEl.innerHTML="";
-  if(!cards.length){
-    for(let i=0;i<3;i++){
-      const d=document.createElement("div");
-      d.className="card empty";d.innerHTML=`<span>Slot ${i+1}</span>`;
-      slotsEl.appendChild(d);
-    }
-    return;
-  }
-  const locked=cards.some(c=>c.locked);
-  cards.forEach((c,i)=>{
-    const d=document.createElement("div");
-    d.className="card"+(c.locked?" taken":"")+(locked&&!c.locked?" faded":"");
-    d.innerHTML=`
-      <span class="tag ${c.d[1]}">${TIER[c.d[1]]}</span>
-      <h3 class="name">${c.d[0]}</h3>
-      <p class="note">${c.d[2]}</p>
-      ${c.item?`<div class="item">
-        <div class="ih"><span>First legendary · ${c.item[1]}</span>${c.locked?"":'<button class="reroll">New item</button>'}</div>
-        <div class="iname">${c.item[0]}</div>
-      </div>`:""}
-      ${c.locked?'<div class="stamp">Given</div>':'<button class="assign">Give them this</button>'}`;
-    const a=d.querySelector(".assign"); if(a)a.onclick=()=>assign(i);
-    const r=d.querySelector(".reroll"); if(r)r.onclick=()=>{c.item=rand(itemPool());drawSlots();};
-    slotsEl.appendChild(d);
-  });
-}
-
-const setHint=h=>hintEl.innerHTML=h;
-
-function roll(){
-  if(spinning)return;
-  const p=pool();
-  if(p.length<3){
-    cards=[];drawSlots();
-    setHint(`Only ${p.length} champion${p.length===1?"":"s"} left under these rules. Turn off <b>No repeats</b>, widen the pool, or clear the list.`);
-    return;
-  }
-  const ip=itemPool();
-  cards=pickThree(p).map(d=>({d,item:itemOn?rand(ip):null,locked:false}));
-  rollBtn.textContent="Roll again";
-  setHint("");
-  drawSlots();
-  if(reduced)return;
-
-  spinning=true;rollBtn.disabled=true;
-  const els=[...slotsEl.children];
-  els.forEach(e=>e.classList.add("spinning"));
-  const names=els.map(e=>e.querySelector(".name"));
-  const items=els.map(e=>e.querySelector(".iname"));
-  const tick=setInterval(()=>{
-    els.forEach((e,i)=>{
-      if(!e.classList.contains("spinning"))return;
-      names[i].textContent=rand(p)[0];
-      if(items[i])items[i].textContent=rand(ip)[0];
-    });
-  },55);
-  els.forEach((e,i)=>setTimeout(()=>{
-    e.classList.remove("spinning");
-    names[i].textContent=cards[i].d[0];
-    if(items[i])items[i].textContent=cards[i].item[0];
-    if(i===els.length-1){clearInterval(tick);spinning=false;rollBtn.disabled=false;}
-  },440+i*280));
-}
-
-function assign(i){
-  if(spinning||cards[i].locked)return;
-  const c=cards[i];c.locked=true;
-  used.add(role+"|"+c.d[0]);
-  log.unshift({role,name:c.d[0],tag:c.d[1],item:c.item?c.item[0]:null});
-  drawSlots();drawLog();
-  setHint(`<b>${c.d[0]}</b>${c.item?` into <b>${c.item[0]}</b>`:""} — that's the enemy ${LABEL[role].toLowerCase()}. Roll again for the next player.`);
-}
-
-function drawLog(){
-  logEl.innerHTML="";
-  log.forEach(e=>{
-    const li=document.createElement("li");
-    li.innerHTML=`<span class="lr">${LABEL[e.role]}</span><span class="ln">${e.name}</span>`+
-      (e.item?`<span class="li2">first buy: ${e.item}</span>`:"")+
-      `<span class="lt ${e.tag}">${TIER[e.tag].split(" ")[0]}</span>`;
-    logEl.appendChild(li);
-  });
-  emptyLogEl.hidden=log.length>0;
-  clearBtn.hidden=log.length===0;
-}
-
-document.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{
-  if(spinning)return;
-  filt=ch.dataset.f;
-  document.querySelectorAll(".chip").forEach(o=>o.setAttribute("aria-pressed",String(o===ch)));
-});
-$("norepeat").onchange=e=>noRepeat=e.target.checked;
-$("itemon").onchange=e=>itemOn=e.target.checked;
-rollBtn.onclick=roll;
-clearBtn.onclick=()=>{log=[];used=new Set();drawLog();setHint("List cleared. Every champion is back in the pool.");};
-
-drawRoles();drawSlots();drawLog();
-</script>
 </body>
 </html>
