@@ -81,9 +81,20 @@ h1 em{font-style:normal;color:var(--spicy)}
 .card.spinning .name,.card.spinning .iname{color:#7E6BB8}
 .card.spinning .assign,.card.spinning .reroll{opacity:.3;pointer-events:none}
 .card.taken{border-color:var(--safe)}
-.card.taken .assign,.card.taken .reroll{display:none}
+.card.taken .assign,.card.taken .reroll,.card.taken .ban{display:none}
+.card.banned{border-color:var(--spicy);opacity:.55}
+.card.banned .assign,.card.banned .reroll,.card.banned .ban{display:none}
 .card.faded{opacity:.42}
-.stamp{position:absolute;right:-26px;top:20px;transform:rotate(28deg);font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:20px;letter-spacing:.14em;color:#0F0B1C;background:var(--safe);padding:5px 34px}
+.stamp{position:absolute;right:-26px;top:20px;transform:rotate(28deg);font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:20px;letter-spacing:.14em;color:#0F0B1C;background:var(--safe);padding:5px 34px;max-width:220px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stamp.ban{background:var(--spicy);color:#2B0714}
+.ban{border:1px solid var(--line);background:transparent;color:var(--spicy);cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:8px 0;border-radius:7px;width:100%;margin-top:8px;transition:background .15s,border-color .15s}
+.ban:hover{background:rgba(255,91,143,.14);border-color:var(--spicy)}
+
+.give-to{display:flex;align-items:center;gap:10px;margin:0 0 16px;flex-wrap:wrap}
+.give-to label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.give-to input{background:var(--ink-2);border:1px solid var(--line);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13.5px;padding:9px 12px;min-width:220px;flex:1;max-width:280px}
+.give-to input:focus{outline:none;border-color:var(--safe)}
+.give-to .gh{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .hint{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);min-height:18px;margin:0 0 34px}
 .hint b{color:var(--text);font-weight:600}
 
@@ -154,7 +165,7 @@ h1 em{font-style:normal;color:var(--spicy)}
 
   <p class="eyebrow">Custom lobby · you draft for them</p>
   <h1>Roll for<br>the <em>enemy</em></h1>
-  <p class="lede">Pick a role, roll three champions, hand one to the player you're drafting for. Safe and spicy picks all work in that lane. Chaos picks do not — that's the whole point of them — and everyone gets a mandatory first legendary item on top. A mixed roll never serves more than one spicy or chaos card, so there's always a way out.</p>
+  <p class="lede">Pick a role, roll three champions, ban one if you want, then hand one of the remaining two to the player you're drafting for. Safe and spicy picks all work in that lane. Chaos picks do not — that's the whole point of them — and everyone gets a mandatory first legendary item on top. A mixed roll can serve up to two spicy/chaos cards out of three now, but there's always at least one safe pick left so there's a way out.</p>
 
   <p class="label">Running this as a full 2-team draft</p>
   <p class="lede" style="max-width:64ch">
@@ -168,6 +179,8 @@ h1 em{font-style:normal;color:var(--spicy)}
     <li><b>Top</b><span>Team 1's top laner rolls first — for Team 2's top laner. Then Team 2's top laner rolls for Team 1's top laner.</span></li>
     <li><b>Jungle</b><span>Turn to roll first flips: Team 2's jungler rolls for Team 1's jungler, then Team 1's jungler rolls for Team 2's.</span></li>
     <li><b>Mid → ADC → Support</b><span>Keep alternating who rolls first, role by role, all the way down. Whoever didn't open the last role opens this one.</span></li>
+    <li><b>Ban</b><span>Before you assign, you get one ban per roll — knock out whichever of the three you refuse to hand over, then give one of the remaining two.</span></li>
+    <li><b>Who it's going to</b><span>Type the receiving player's name (or pick from the shuffle) before you assign — it locks the pick to them and shows up in the list below.</span></li>
   </ul>
 
   <p class="label">0 — Shuffle the lobby (optional)</p>
@@ -205,7 +218,13 @@ h1 em{font-style:normal;color:var(--spicy)}
     <button class="roll" id="rollBtn">Roll three</button>
   </div>
 
-  <p class="label">3 — Give them one</p>
+  <p class="label">3 — Ban one, give one</p>
+  <div class="give-to">
+    <label for="giveToInput">Rolling for</label>
+    <input type="text" id="giveToInput" list="playerList" placeholder="Player name">
+    <datalist id="playerList"></datalist>
+    <span class="gh" id="giveToHint">Shuffle the lobby above to autofill this from your teams, or just type a name.</span>
+  </div>
   <div class="slots" id="slots" aria-live="polite"></div>
   <p class="hint" id="hint"></p>
 
@@ -252,11 +271,12 @@ const TIER={s:"Safe pick",x:"Spicy pick",c:"Chaos pick"};
 // strip duplicate names within a role
 for(const k in D){const seen=new Set();D[k]=D[k].filter(c=>{const n=c[0].toLowerCase();if(seen.has(n))return false;seen.add(n);return true;});}
 
-let role="top", filt="sx", noRepeat=true, itemOn=true, used=new Set(), log=[], cards=[], spinning=false;
+let role="top", filt="sx", noRepeat=true, itemOn=true, used=new Set(), log=[], cards=[], spinning=false, banUsedThisRoll=false;
 
 const $=id=>document.getElementById(id);
 const rolesEl=$("roles"),slotsEl=$("slots"),hintEl=$("hint"),logEl=$("log"),
-      emptyLogEl=$("emptyLog"),clearBtn=$("clearBtn"),rollBtn=$("rollBtn");
+      emptyLogEl=$("emptyLog"),clearBtn=$("clearBtn"),rollBtn=$("rollBtn"),
+      giveToEl=$("giveToInput"),playerListEl=$("playerList"),giveToHintEl=$("giveToHint");
 const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const rand=a=>a[Math.floor(Math.random()*a.length)];
 const sample=(a,n)=>{const c=a.slice(),o=[];while(o.length<n&&c.length)o.push(c.splice(Math.floor(Math.random()*c.length),1)[0]);return o;};
@@ -325,6 +345,9 @@ function doShuffle(){
   shuffleHintEl.innerHTML=`<b>${team1.length}v${team2.length}</b> — roles handed out at random per side.`;
   teamsResultEl.hidden=false;
 
+  playerListEl.innerHTML=players.map(p=>`<option value="${p.replace(/"/g,'&quot;')}">`).join("");
+  giveToHintEl.textContent="Names from your shuffle are in the dropdown — pick one or type a new one.";
+
   matchupListEl.innerHTML="";
   const rows=ROLES.map(([k,short])=>({
     role:k,label:LABEL[k],
@@ -371,13 +394,20 @@ shuffleBtn.onclick=doShuffle;
 // enchanter legendaries are stripped out of jungle rolls
 const itemPool=()=>role==="jungle"?ITEMS.filter(i=>i[1]!=="enchanter"):ITEMS;
 
-// mixed pools serve at most one spicy-or-chaos card out of the three
+// mixed pools can now serve up to two spicy-or-chaos cards out of three,
+// but always leave at least one safe pick when one exists — that's the way out
 function pickThree(p){
   const mixed=(filt==="sx"||filt==="all");
   const safe=p.filter(c=>c[1]==="s"), hot=p.filter(c=>c[1]!=="s");
-  if(!mixed||safe.length<2)return sample(p,3);
-  const wantHot=(hot.length&&Math.random()<.7)?1:0;
-  return shuffle(sample(safe,3-wantHot).concat(wantHot?sample(hot,1):[]));
+  if(!mixed||!safe.length)return sample(p,3);
+  const maxHot=Math.min(2,hot.length);
+  let wantHot=0;
+  if(maxHot>0){
+    const r=Math.random();
+    wantHot = r<.35?0 : (maxHot<2||r<.75)?1:2;
+  }
+  if(safe.length<3-wantHot)wantHot=3-safe.length;
+  return shuffle(sample(safe,3-wantHot).concat(wantHot?sample(hot,wantHot):[]));
 }
 
 function pool(){
@@ -416,18 +446,24 @@ function drawSlots(){
   const locked=cards.some(c=>c.locked);
   cards.forEach((c,i)=>{
     const d=document.createElement("div");
-    d.className="card"+(c.locked?" taken":"")+(locked&&!c.locked?" faded":"");
+    d.className="card"+(c.locked?" taken":"")+(c.banned?" banned":"")+(locked&&!c.locked&&!c.banned?" faded":"");
+    const showAssign=!c.locked&&!c.banned;
+    const showBan=!c.locked&&!c.banned&&!banUsedThisRoll;
     d.innerHTML=`
       <span class="tag ${c.d[1]}">${TIER[c.d[1]]}</span>
       <h3 class="name">${c.d[0]}</h3>
       <p class="note">${c.d[2]}</p>
       ${c.item?`<div class="item">
-        <div class="ih"><span>First legendary · ${c.item[1]}</span>${c.locked?"":'<button class="reroll">New item</button>'}</div>
+        <div class="ih"><span>First legendary · ${c.item[1]}</span>${c.locked||c.banned?"":'<button class="reroll">New item</button>'}</div>
         <div class="iname">${c.item[0]}</div>
       </div>`:""}
-      ${c.locked?'<div class="stamp">Given</div>':'<button class="assign">Give them this</button>'}`;
+      ${c.locked?`<div class="stamp">${c.player?c.player:"Given"}</div>`:""}
+      ${c.banned?'<div class="stamp ban">Banned</div>':""}
+      ${showAssign?'<button class="assign">Give them this</button>':""}
+      ${showBan?'<button class="ban">Ban this one</button>':""}`;
     const a=d.querySelector(".assign"); if(a)a.onclick=()=>assign(i);
     const r=d.querySelector(".reroll"); if(r)r.onclick=()=>{c.item=rand(itemPool());drawSlots();};
+    const b=d.querySelector(".ban"); if(b)b.onclick=()=>ban(i);
     slotsEl.appendChild(d);
   });
 }
@@ -443,7 +479,8 @@ function roll(){
     return;
   }
   const ip=itemPool();
-  cards=pickThree(p).map(d=>({d,item:itemOn?rand(ip):null,locked:false}));
+  cards=pickThree(p).map(d=>({d,item:itemOn?rand(ip):null,locked:false,banned:false,player:null}));
+  banUsedThisRoll=false;
   rollBtn.textContent="Roll again";
   setHint("");
   drawSlots();
@@ -470,12 +507,26 @@ function roll(){
 }
 
 function assign(i){
-  if(spinning||cards[i].locked)return;
-  const c=cards[i];c.locked=true;
+  if(spinning||cards[i].locked||cards[i].banned)return;
+  const player=giveToEl.value.trim();
+  if(!player){
+    giveToEl.focus();
+    setHint(`Type who this roll is <b>for</b> first — the receiving player's name goes in the field above the cards.`);
+    return;
+  }
+  const c=cards[i];c.locked=true;c.player=player;
   used.add(role+"|"+c.d[0]);
-  log.unshift({role,name:c.d[0],tag:c.d[1],item:c.item?c.item[0]:null});
+  log.unshift({role,name:c.d[0],tag:c.d[1],item:c.item?c.item[0]:null,player});
   drawSlots();drawLog();
-  setHint(`<b>${c.d[0]}</b>${c.item?` into <b>${c.item[0]}</b>`:""} — that's the enemy ${LABEL[role].toLowerCase()}. Roll again for the next player.`);
+  giveToEl.value="";
+  setHint(`<b>${player}</b> gets <b>${c.d[0]}</b>${c.item?` into <b>${c.item[0]}</b>`:""} at ${LABEL[role].toLowerCase()}. Roll again for the next player.`);
+}
+
+function ban(i){
+  if(spinning||banUsedThisRoll||cards[i].locked||cards[i].banned)return;
+  const c=cards[i];c.banned=true;banUsedThisRoll=true;
+  drawSlots();
+  setHint(`<b>${c.d[0]}</b> banned. Pick one of the remaining two for whoever's in the field above.`);
 }
 
 function drawLog(){
@@ -483,6 +534,7 @@ function drawLog(){
   log.forEach(e=>{
     const li=document.createElement("li");
     li.innerHTML=`<span class="lr">${LABEL[e.role]}</span><span class="ln">${e.name}</span>`+
+      (e.player?`<span class="li2">→ ${e.player}</span>`:"")+
       (e.item?`<span class="li2">first buy: ${e.item}</span>`:"")+
       `<span class="lt ${e.tag}">${TIER[e.tag].split(" ")[0]}</span>`;
     logEl.appendChild(li);
