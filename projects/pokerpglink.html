@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PokeRPGLink — LEYMO_</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  .btn.rose{background:#e0566b;color:#2a0b12}
+  .btn.rose:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(224,86,107,.45)}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:18px}
+  .shots figure{margin:0;background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .shots figcaption{padding:10px 14px;color:var(--text-dim);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site-header">
+    <a class="back-link" href="../index.html">&larr; all projects</a>
+  </header>
+
+  <section class="hero">
+    <span class="eyebrow">tool::dual_screen — android + ruby · ayn thor</span>
+    <h1>Poke<span class="accent" style="color:#e0566b">RPG</span>Link</h1>
+    <p class="lede">A touch panel for the AYN Thor's bottom screen that plugs into Pokémon fangames running on the top one: battle menus, your party, the bag, the map and the Pokédex, all one tap away — without ever stealing the controller from the game.</p>
+    <div class="btn-row">
+      <a class="btn rose" href="https://github.com/Leymo0/PokeRPGLink" target="_blank" rel="noopener">Source on GitHub &rarr;</a>
+      <a class="btn ghost" href="https://github.com/Leymo0/PokeRPGLink/releases" target="_blank" rel="noopener">Download the APK</a>
+      <span class="pill"><span class="pulse" style="background:#e0566b"></span>active</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>// the idea</h2>
+    <p>
+      The Thor has two screens, and RPG Maker fangames only use one. PokeRPGLink turns the second
+      one into the DS-style touch screen these games never had. A small mod inside the game reports
+      what's happening; the Android app draws it on the bottom screen and sends your taps back as
+      commands. The panel's window can't take focus, so the top screen keeps the controller the
+      whole time.
+    </p>
+  </section>
+
+  <section class="shots">
+    <figure><img src="../assets/pokerpglink/battle.png" alt="Battle screen with type-coloured move buttons, both Pokémon's HP and status, weather and field chips" loading="lazy"><figcaption>In battle — moves with type, effectiveness and PP; the field, weather and every active effect</figcaption></figure>
+    <figure><img src="../assets/pokerpglink/waiting.png" alt="Waiting screen with a big Play button" loading="lazy"><figcaption>Before the game starts — one tap opens the emulator on the top screen</figcaption></figure>
+  </section>
+
+  <section class="section">
+    <h2>// what it does</h2>
+    <ul class="feature-list">
+      <li><span class="dot"></span><div>
+        <b>Battles on the bottom screen</b>
+        <span>Fight, Bag, Pokémon and Run as big buttons; moves with type, power, PP and effectiveness against each foe; target picking in double battles; a quick-throw button for the last Poké Ball you used.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Out of battle</b>
+        <span>The wild Pokémon in the current area (shadows until caught, day/night icons), party summaries with move reordering and held items, a usable bag, saving, the town map with fly, and a full Pokédex.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Several games, one panel</b>
+        <span>Pokémon Rejuvenation, Reborn, Desolation, Infinite Fusion and Pokémon Tectonic — each with its own mechanics shown properly: Rejuvenation's field effects, Shadow Pokémon and boss shields, Tectonic's Avatars and statuses.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Sets itself up</b>
+        <span>The app finds the games on the device, installs the mod into the right place (even into Tectonic's compiled plugin file) and keeps it updated.</span>
+      </div></li>
+      <li><span class="dot"></span><div>
+        <b>Skins and plugins</b>
+        <span>Ten built-in skins, from a bouncy BDSP-style look to a 16-bit console theme, remembered per game. Anyone can make their own with CSS and JavaScript, including animations and sounds that react to battle events.</span>
+      </div></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>// how it's built</h2>
+    <p>
+      A Ruby mod hooks the game's battle and map scenes and writes the game state to a small JSON
+      file several times a second. The Android app (Java) shows a WebView UI in a non-focusable overlay
+      on the second display and writes one file per tap, which the mod turns into the game's own
+      menu inputs. Adapters cover the different engine families, and every hook fails on its own,
+      so a game update turns off one feature instead of breaking the game.
+    </p>
+  </section>
+
+  <footer class="site-footer">
+    <span class="fine">dual_screen // status: active</span>
+    <div class="footer-links">
+      <a href="../index.html">&larr; back home</a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>
