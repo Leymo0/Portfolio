@@ -187,7 +187,17 @@ body.overlay .bk{position:absolute;left:0;top:0}
 .bk-wrap{width:1700px}
 .bk-h{font-size:46px;font-weight:900;margin-bottom:26px;text-align:center}
 .bk-regions{display:grid;grid-template-columns:repeat(5,1fr);gap:22px}
-.bk-reg{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:22px}
+.bk-reg{position:relative;background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:22px}
+.bk-ic{position:absolute;right:12px;top:6px;width:84px;height:84px;image-rendering:pixelated;opacity:.9;transform-origin:50% 90%}
+.bk-ic.dim{filter:grayscale(1) brightness(.45);opacity:.55}
+.bk-reg .bar i{animation:bkfill 1.5s cubic-bezier(.3,.7,.3,1) var(--d) both}
+@keyframes bkfill{from{width:0}}
+.bk-reg.done{animation:bkpop .6s cubic-bezier(.2,1.6,.4,1) var(--pd) both;border-color:#ffd166;box-shadow:0 0 0 4px rgba(255,209,102,.18),0 0 34px rgba(255,209,102,.35)}
+@keyframes bkpop{0%{transform:none}40%{transform:scale(1.09)}100%{transform:none}}
+.bk-reg.done .bk-ic{opacity:1;animation:bkdance 1.1s ease-in-out calc(var(--pd) + .5s) infinite}
+@keyframes bkdance{0%,100%{transform:translateY(0) rotate(0)}20%{transform:translateY(-12px) rotate(-8deg)}40%{transform:translateY(0) rotate(0)}60%{transform:translateY(-6px) rotate(8deg)}80%{transform:translateY(0) rotate(0)}}
+.bk-done{position:absolute;left:50%;top:50%;z-index:2;padding:6px 18px;border-radius:12px;background:#ffd166;color:#1a1530;font-size:30px;font-weight:900;letter-spacing:.06em;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:bkstamp .55s cubic-bezier(.2,1.6,.4,1) var(--pd) both;transform:translate(-50%,-50%) rotate(-8deg)}
+@keyframes bkstamp{0%{opacity:0;transform:translate(-50%,-50%) rotate(-8deg) scale(2.4)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1)}}
 .bk-reg.on{border-color:var(--accent)}
 .bk-rn{font-size:32px;font-weight:900}
 .bk-rg{font-size:18px;color:var(--muted);font-weight:800;margin:2px 0 14px;min-height:24px}
@@ -206,6 +216,7 @@ body.overlay .bk{position:absolute;left:0;top:0}
 .bk-mq{position:absolute;left:0;right:0;bottom:40px;height:120px;overflow:hidden;background:rgba(0,0,0,.25);border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
 .bk-mqi{display:flex;width:max-content;animation:bkmq linear infinite}
 .bk-mqi img{width:120px;height:120px;image-rendering:pixelated;margin:0 4px}
+.bk-mqi img.dance{animation:bkdance 1.1s ease-in-out infinite;transform-origin:50% 90%}
 .bk-mqi img.dim{filter:grayscale(1) brightness(.4);opacity:.6}
 @keyframes bkmq{to{transform:translateX(-50%)}}
 .bk-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:10px}
@@ -220,6 +231,39 @@ details.cu summary h2::before{content:'▸ ';color:var(--muted)} details.cu[open
 .mon.later{border:2px dashed var(--via)} .mon.later img{filter:grayscale(.6) brightness(.8);opacity:.85}
 .mon.later .st{background:transparent;color:var(--via);border:1px solid var(--via)}
 .k.later{background:rgba(185,140,255,.18);color:var(--via)}
+
+.toast{position:fixed;top:18px;right:18px;z-index:99;display:flex;gap:12px;align-items:center;min-width:300px;max-width:420px;padding:12px 16px 12px 12px;border-radius:18px;background:linear-gradient(135deg,rgba(30,24,60,.97),rgba(18,20,42,.97));border:2px solid #ffd166;box-shadow:0 0 0 4px rgba(255,209,102,.18),0 12px 40px rgba(0,0,0,.55);animation:tin .55s cubic-bezier(.2,1.4,.4,1) both;color:var(--text)}
+.toast.on-ov{left:10px;right:auto;top:10px;width:440px;max-width:440px;box-sizing:border-box}
+.toast.shiny{border-color:#b98cff;box-shadow:0 0 0 4px rgba(185,140,255,.25),0 0 30px rgba(185,140,255,.5),0 12px 40px rgba(0,0,0,.55)}
+.toast.out{animation:tout .5s ease-in both}
+.toast .tic{flex:0 0 64px;height:64px;border-radius:14px;background:rgba(255,255,255,.06);display:grid;place-items:center;animation:tbob 1.2s ease-in-out infinite}
+.toast .tic img{width:64px;height:64px;image-rendering:pixelated}.toast .tic span{font-size:34px}
+.toast .ttx{display:flex;flex-direction:column;min-width:0}
+.toast .ttx small{font-size:11px;letter-spacing:.12em;font-weight:800;color:#ffd166}.toast.shiny .ttx small{color:#d7b8ff}
+.toast .ttx b{font-size:22px;line-height:1.15}.toast .ttx span{font-size:14px;color:var(--muted)}
+.tconf{position:absolute;left:50%;top:50%;pointer-events:none}
+.tconf i{position:absolute;width:8px;height:12px;border-radius:2px;opacity:0;animation:tpop 1.3s ease-out var(--d) both}
+@keyframes tin{from{transform:translateY(-30px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+@keyframes tout{to{transform:translateY(-20px) scale(.95);opacity:0}}
+@keyframes tbob{50%{transform:translateY(-4px) rotate(-3deg)}}
+@keyframes tpop{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 220px)) rotate(var(--r))}}
+
+.tabsep{flex:0 0 2px;align-self:stretch;background:var(--line);margin:0 4px;border-radius:2px}
+.pub-hero .bk-stats{display:flex;justify-content:center;gap:60px;margin:6px 0 10px}
+.pub-hero .bk-stats b{display:block;font-size:46px;font-weight:900;color:var(--accent2);text-align:center}.pub-hero .bk-stats span{display:block;color:var(--muted);font-weight:800;text-align:center}
+.pub-regions .bk-regions{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin:14px 0}
+.pub-regions .bk-reg{padding:16px;cursor:pointer;transition:transform .15s}.pub-regions .bk-reg:hover{transform:translateY(-3px)}
+.pub-regions .bk-rn{font-size:24px}.pub-regions .bk-rg{font-size:14px;margin-bottom:10px}.pub-regions .bk-rc{font-size:20px}.pub-regions .bk-ic{width:64px;height:64px}
+.pub-regions .bk-reg .bar{height:12px}.pub-regions .bk-done{font-size:20px;padding:4px 12px}
+.pub-shinies{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.pub-sh{background:rgba(185,140,255,.08);border:1px solid rgba(185,140,255,.35);border-radius:16px;padding:12px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.pub-sh img{width:96px;height:96px;image-rendering:pixelated}.pub-sh b{font-size:17px}.pub-sh span{font-size:12px;color:var(--muted)}
+.pub-ach{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.pub-a{display:flex;gap:12px;align-items:center;background:rgba(255,209,102,.06);border:1px solid rgba(255,209,102,.35);border-radius:16px;padding:10px 14px}
+.pub-a.shiny{background:rgba(185,140,255,.08);border-color:rgba(185,140,255,.4)}
+.pub-a img{width:56px;height:56px;image-rendering:pixelated}.pub-a .pi{font-size:34px;width:56px;text-align:center}
+.pub-a div{display:flex;flex-direction:column}.pub-a b{font-size:16px}.pub-a span{font-size:13px;color:var(--muted)}.pub-a small{font-size:11px;color:var(--muted);opacity:.8}
+@media(max-width:700px){.pub-hero .bk-stats{gap:18px;flex-wrap:wrap}.pub-hero .bk-stats b{font-size:32px}}
 </style>
 </head>
 <body class="control">
@@ -266,7 +310,7 @@ function blank(){
 function load(){try{let raw=localStorage.getItem(KEY); if(!raw){ const old=localStorage.getItem('livingdex-journey-v1'); if(old){ const o=JSON.parse(old), n=blank(); n.dex=o.dex||{}; n.active=o.active||'kanto'; n.last=o.last||null; Object.assign(n.overlay,o.overlay||{}); for(const id in (o.regions||{})) if(n.regions[id]){ n.regions[id].team=o.regions[id].team||''; if(o.regions[id].shiny&&o.regions[id].shiny.done) n.regions[id].shinies=[{mon:o.regions[id].shiny.mon||'',nick:'',t:Date.now()}]; } raw=JSON.stringify(n);} } if(raw){const s=Object.assign(blank(),JSON.parse(raw)); REGIONS.forEach(r=>{s.regions[r.id]=Object.assign(blankRegion(),s.regions[r.id]||{}); const rg=s.regions[r.id]; if(!Array.isArray(rg.shinies)) rg.shinies=[]; if(rg.shiny&&rg.shiny.done&&!rg.shinies.length) rg.shinies.push({mon:rg.shiny.mon||'',nick:'',t:Date.now()}); delete rg.shiny; rg.hof=Object.assign(blankHof(),rg.hof||{});}); s.overlay=Object.assign(blank().overlay,s.overlay||{}); s.via=s.via||{}; s.pick=s.pick||{}; return s;}}catch(e){} return blank();}
 let S = load();
 let lastRaw = null;
-function save(){ if(VIEW==='public') return; try{ const raw=JSON.stringify(S); lastRaw=raw; localStorage.setItem(KEY,raw);}catch(e){} if(typeof scheduleAuto==='function') scheduleAuto(); }
+function save(){ if(VIEW==='public') return; if(VIEW==='control') checkAch(); try{ const raw=JSON.stringify(S); lastRaw=raw; localStorage.setItem(KEY,raw);}catch(e){} if(typeof scheduleAuto==='function') scheduleAuto(); }
 
 // ---------- helpers ----------
 const R = id => REGIONS.find(r=>r.id===id);
@@ -323,7 +367,7 @@ function breakSlides(){
   const cur=R(S.active), title=BREAK_TITLES[S.breakTitle||'soon'];
   const slides=[];
   slides.push(`<div class="bk-center"><div class="bk-kicker">Living Dex Journey</div><div class="bk-big">${esc(title)}</div><div class="bk-stats"><div><b>${all}</b><span>of 1025 caught</span></div>${vo?`<div><b style="color:var(--via)">${vo}</b><span>non-origin</span></div>`:''}<div><b>${home}</b><span>in Pokémon HOME</span></div><div><b>${shinies.length}</b><span>shinies</span></div></div><div class="bk-now">Now playing: <b>${esc(V(cur).game)}</b> · ${esc(cur.name)}</div></div>`);
-  slides.push(`<div class="bk-wrap"><div class="bk-h">Region progress</div><div class="bk-regions">${REGIONS.map(x=>{const c=counts(x), champ=S.regions[x.id].hof.team.some(t=>t.mon); return `<div class="bk-reg ${x.id===S.active?'on':''}"><div class="bk-rn">${esc(x.name)}${champ?' 🏆':''}</div><div class="bk-rg">${esc(V(x).game)}</div><div class="bar"><i class="h" style="width:${c.h/c.total*100}%"></i><i class="c" style="width:${c.c/c.total*100}%"></i><i style="background:var(--via);width:${c.vo/c.total*100}%"></i></div><div class="bk-rc">${c.got} / ${c.total}${c.vo?` <span style="color:var(--via);font-size:20px">+${c.vo}</span>`:''}</div></div>`;}).join('')}</div></div>`);
+  slides.push(`<div class="bk-wrap"><div class="bk-h">Region progress</div>${regionCardsHtml()}</div>`);
   const hofs=REGIONS.filter(x=>S.regions[x.id].hof.team.some(t=>t.mon)).sort((a,b)=>(S.regions[b.id].hof.date||'').localeCompare(S.regions[a.id].hof.date||''));
   hofs.forEach(x=>slides.push(`<div class="bk-wrap bk-hofwrap">${hofHtml(x,'hf-break')}</div>`));
   if(shinies.length){ const last=shinies.sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,12); slides.push(`<div class="bk-wrap"><div class="bk-h">✨ Shiny collection</div><div class="bk-shinies">${last.map(x=>{const n=findNum(x.mon);return `<div class="bk-sh">${n?`<img src="${SPRITE(n,true)}" alt="">`:''}<b>${esc(x.nick||x.mon)}</b><span>${esc(x.nick?x.mon+' · ':'')}${esc(x.region)}</span></div>`;}).join('')}</div></div>`); }
@@ -331,11 +375,11 @@ function breakSlides(){
   return slides;
 }
 function marqueeHtml(){
-  let nums=Object.keys(S.dex).map(Number).sort((a,b)=>a-b);
-  let dim=false;
-  if(nums.length<24){ const r=R(S.active); nums=[]; for(let n=r.range[0];n<=r.range[1];n++) nums.push(n); dim=true; }
-  nums=nums.slice(0,160);
-  const row=nums.map(n=>`<img src="${SPRITE(n)}" class="${dim&&!S.dex[n]?'dim':''}" alt="">`).join('');
+  const ar=R(S.active); let nums=[]; for(let n=ar.range[0];n<=ar.range[1];n++) nums.push(n);
+  Object.keys(S.dex).map(Number).sort((a,b)=>a-b).forEach(n=>{ if(n<ar.range[0]||n>ar.range[1]) nums.push(n); });
+  const dim=true; nums=nums.slice(0,240);
+  const NV=new Set(neverList().map(x=>x.n)), doneR=new Set(REGIONS.filter(x=>{for(let n=x.range[0];n<=x.range[1];n++) if(!S.dex[n]&&!NV.has(n)) return false; return true;}).map(x=>x.id));
+  const row=nums.map((n,i)=>{const rg=REGIONS.find(x=>n>=x.range[0]&&n<=x.range[1]); const dn=rg&&doneR.has(rg.id); return `<img src="${SPRITE(n)}" class="${dim&&!S.dex[n]?'dim':''} ${dn?'dance':''}" style="${dn?`animation-delay:${(i%7)*.15}s`:''}" alt="">`;}).join('');
   return `<div class="bk-mq"><div class="bk-mqi" style="animation-duration:${Math.max(30,nums.length*1.2)}s">${row}${row}</div></div>`;
 }
 function renderBreak(){
@@ -351,6 +395,7 @@ function showSlide(animate){
   const el=document.createElement('div'); el.className='bk-slide'+(animate?' in':''); el.innerHTML=BRK.slides[BRK.i];
   const old=[...st.children]; old.forEach(o=>{ if(animate){ o.classList.add('out'); setTimeout(()=>o.remove(),900);} else o.remove(); });
   st.appendChild(el);
+  animCounts(el);
   document.getElementById('bk-dots').innerHTML=BRK.slides.map((_,i)=>`<i class="${i===BRK.i?'on':''}"></i>`).join('');
 }
 function fitBreak(){ const b=document.getElementById('bk'); if(!b) return; const k=Math.min(window.innerWidth/1920,window.innerHeight/1080); b.style.transform=`scale(${k})`; }
@@ -359,20 +404,41 @@ function fitBreak(){ const b=document.getElementById('bk'); if(!b) return; const
 let PUB={tab:null,filter:'all',updated:null,err:null,loaded:false};
 function loadPublic(){
   fetch('progress.json?t='+Date.now()).then(r=>{if(!r.ok) throw new Error(r.status); return r.json();}).then(d=>{
-    const s=blank(); s.dex=d.dex||{}; s.via=d.via||{}; s.pick=d.pick||{}; s.active=d.active||'kanto';
+    const s=blank(); s.dex=d.dex||{}; s.via=d.via||{}; s.pick=d.pick||{}; s.ach=d.ach||{}; s.active=d.active||'kanto';
     for(const id in (d.regions||{})) if(s.regions[id]) Object.assign(s.regions[id],d.regions[id]);
     REGIONS.forEach(r=>{const rg=s.regions[r.id]; rg.hof=Object.assign(blankHof(),rg.hof||{}); if(!Array.isArray(rg.shinies)) rg.shinies=[]; rg.bv=rg.bv||{};});
-    S=s; PUB.updated=d.updated; PUB.loaded=true; if(!PUB.tab) PUB.tab=s.active; renderPublic();
+    S=s; PUB.updated=d.updated; PUB.loaded=true; if(!PUB.tab) PUB.tab='overview'; renderPublic();
   }).catch(e=>{PUB.err=String(e); PUB.loaded=true; renderPublic();});
 }
+function regionCardsHtml(){ const NV=new Set(neverList().map(x=>x.n)); const ICON={kanto:25,johto:249,hoenn:382,unova:643,alola:800,sinnoh:483,galar:889,paldea:1007,hisui:493,kalos:718};
+  return `<div class="bk-regions">${REGIONS.map((x,i)=>{const c=counts(x), champ=S.regions[x.id].hof.team.some(t=>t.mon); let fill=0; for(let n=x.range[0];n<=x.range[1];n++) if(S.dex[n]||NV.has(n)) fill++; const done=fill>=c.total, d=(.25+i*.12).toFixed(2), pd=(1.9+i*.12).toFixed(2);
+    return `<div class="bk-reg ${x.id===S.active?'on':''} ${done?'done':''}" data-rcard="${x.id}" style="--d:${d}s;--pd:${pd}s"><img class="bk-ic ${S.dex[ICON[x.id]]||done?'':'dim'}" src="${SPRITE(ICON[x.id]||x.range[0])}" alt="">${done?'<div class="bk-done">COMPLETED!</div>':''}<div class="bk-rn">${esc(x.name)}${champ?' 🏆':''}</div><div class="bk-rg">${esc(V(x).game)}</div><div class="bar"><i class="h" style="width:${c.h/c.total*100}%"></i><i class="c" style="width:${c.c/c.total*100}%"></i><i style="background:var(--via);width:${c.vo/c.total*100}%"></i></div><div class="bk-rc"><span data-count="${c.got}" style="--d:${d}s">0</span> / ${c.total}${c.vo?` <span style="color:var(--via);font-size:20px">+<span data-count="${c.vo}">0</span></span>`:''}</div></div>`;}).join('')}</div>`; }
+function animCounts(root){ root.querySelectorAll('[data-count]').forEach(n=>{ const to=+n.dataset.count, t0=performance.now()+parseFloat(getComputedStyle(n).getPropertyValue('--d')||'0')*1000; const step=t=>{ const p=Math.min(1,Math.max(0,(t-t0)/1500)); n.textContent=Math.round(to*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step); }); }
 function renderPublic(){
   const app=document.getElementById('app');
   if(!PUB.loaded){ app.innerHTML='<p class="small" style="padding:30px">Loading…</p>'; return; }
   if(PUB.err&&!PUB.updated){ app.innerHTML='<p class="small" style="padding:30px">No progress has been published yet.</p>'; return; }
-  const r=R(PUB.tab||'kanto'), g=V(r), st=S.regions[r.id], k=counts(r), nb=nextBoss(r);
   let all=0, home=0, vo=0; REGIONS.forEach(x=>{const c=counts(x); all+=c.got; home+=c.h; vo+=c.vo;});
+  const SPEC=[['overview','🌍 Overview'],['hof','🏆 Hall of Fame'],['shinies','✨ Shinies'],['ach','🏅 Achievements'],['never','🚫 Uncatchable']];
+  const isSpec=SPEC.some(x=>x[0]===PUB.tab);
+  if(isSpec){
+    const shinies=[]; REGIONS.forEach(x=>S.regions[x.id].shinies.forEach(y=>shinies.push(Object.assign({rg:x},y)))); shinies.sort((p,q)=>(q.t||0)-(p.t||0));
+    const hofs=REGIONS.filter(x=>S.regions[x.id].hof.team.some(t=>t.mon)).sort((p,q)=>(S.regions[q.id].hof.date||'').localeCompare(S.regions[p.id].hof.date||''));
+    const NL=neverList(), A=achNow(), ak=Object.keys(A).filter(k=>S.ach&&S.ach[k]).sort((p,q)=>(+S.ach[q]||0)-(+S.ach[p]||0));
+    const tabs2=SPEC.map(([id,l])=>`<button class="tab ${PUB.tab===id?'on':''}" data-ptab="${id}">${l}${id==='shinies'?` <small>${shinies.length}</small>`:id==='hof'?` <small>${hofs.length}</small>`:id==='ach'?` <small>${ak.length}</small>`:id==='never'?` <small>${NL.filter(x=>S.dex[x.n]).length}/${NL.length}</small>`:''}</button>`).join('')+'<span class="tabsep"></span>'+REGIONS.map(x=>{const kk=counts(x);return `<button class="tab" data-ptab="${x.id}"><span class="dot ${kk.got===kk.total?'done':''}"></span>${x.name} <small>${kk.got}/${kk.total}</small></button>`;}).join('');
+    const cur=R(S.active);
+    let body='';
+    if(PUB.tab==='overview') body=`<div class="card pub-hero"><div class="bk-stats"><div><b data-count="${all}">0</b><span>of 1025 caught</span></div><div><b data-count="${home}">0</b><span>in Pokémon HOME</span></div><div><b data-count="${shinies.length}">0</b><span>shinies</span></div><div><b data-count="${hofs.length}">0</b><span>champion titles</span></div></div><p class="small" style="text-align:center">Now playing <b style="color:var(--text)">${esc(V(cur).game)}</b> · ${esc(cur.name)}. One game per region, every Pokémon caught in its own region's game, all moved to Pokémon HOME.</p></div><div class="pub-regions">${regionCardsHtml()}</div><p class="small" style="text-align:center">Click a region card for its full Pokédex.</p>`;
+    else if(PUB.tab==='hof') body=hofs.length?hofs.map(x=>hofHtml(x,'hf-pub')).join(''):'<div class="card"><p class="small">No champion teams yet. Check back soon!</p></div>';
+    else if(PUB.tab==='shinies') body=`<div class="card"><h2>✨ Shiny collection (${shinies.length})</h2>${shinies.length?`<div class="pub-shinies">${shinies.map(x=>{const n=findNum(x.mon);return `<div class="pub-sh">${n?`<img src="${SPRITE(n,true)}" alt="">`:'<span style="font-size:40px">✨</span>'}<b>${esc(x.nick||x.mon||'Shiny')}</b><span>${x.nick?esc(x.mon)+' · ':''}${esc(x.rg.name)} · ${esc(V(x.rg).game)}</span></div>`;}).join('')}</div>`:'<p class="small">No shinies yet.</p>'}</div>`;
+    else if(PUB.tab==='ach') body=`<div class="card"><h2>🏅 Achievements (${ak.length})</h2>${ak.length?`<div class="pub-ach">${ak.map(k2=>{const x=A[k2], d=+S.ach[k2]>1?new Date(+S.ach[k2]).toLocaleDateString():'';return `<div class="pub-a ${x.shiny?'shiny':''}">${x.mon?`<img src="${SPRITE(x.mon,!!x.shiny)}" alt="">`:`<span class="pi">${x.ic}</span>`}<div><b>${x.ic} ${esc(x.title)}</b><span>${esc(x.sub)}</span>${d?`<small>${d}</small>`:''}</div></div>`;}).join('')}</div>`:'<p class="small">No achievements yet. Champions, shinies and completed Pokédexes show up here.</p>'}</div>`;
+    else if(PUB.tab==='never') body=`<div class="card"><h2>🚫 Can't be caught anywhere on the journey (${NL.length})</h2><p class="small">Event-only and version-exclusive Pokémon. These come from events, gifts and trades.</p><div class="pgrid"><div class="pfam">${NL.map(({n,h})=>{const s2=S.dex[n]||0;return `<div class="mon s${s2} ${s2?'':'cant'}" title="${esc(SP[n].name)}: ${esc(h[1])}">${s2?`<span class="st">${s2===2?'HOME':'✓'}</span>`:''}<img loading="lazy" src="${SPRITE(n)}" alt=""><div class="nm">${esc(SP[n].name)}</div><div class="no">#${String(n).padStart(4,'0')}</div></div>`;}).join('')}</div></div></div>`;
+    app.innerHTML=`<header><div class="topline"><a class="small" href="../" style="margin:0;color:var(--muted);text-decoration:none">← leymo.codes</a><div class="brand">Living Dex <span>Journey</span></div><div class="total">${all} / 1025 caught in their own game · ${home} in HOME${vo?` · ${vo} non-origin`:''}</div>${PUB.updated?`<div class="total" style="margin-left:auto">Updated ${esc(new Date(PUB.updated).toLocaleString())}</div>`:''}</div><div class="tabs">${tabs2}</div></header><main style="display:block;max-width:1400px;margin:0 auto">${body}</main>`;
+    animCounts(app); return;
+  }
+  const r=R(PUB.tab||'kanto'), g=V(r), st=S.regions[r.id], k=counts(r), nb=nextBoss(r), cu=catchup(r);
   const beaten=g.bosses.filter((b,i)=>BV(r).beat[i]).length;
-  const tabs=REGIONS.map(x=>{const kk=counts(x);return `<button class="tab ${x.id===r.id?'on':''}" data-ptab="${x.id}"><span class="dot ${kk.got===kk.total?'done':''}"></span>${x.name} <small>${kk.got}/${kk.total}</small></button>`;}).join('');
+  const tabs=[['overview','🌍 Overview'],['hof','🏆 Hall of Fame'],['shinies','✨ Shinies'],['ach','🏅 Achievements'],['never','🚫 Uncatchable']].map(([id,l])=>`<button class="tab" data-ptab="${id}">${l}</button>`).join('')+'<span class="tabsep"></span>'+REGIONS.map(x=>{const kk=counts(x);return `<button class="tab ${x.id===r.id?'on':''}" data-ptab="${x.id}"><span class="dot ${kk.got===kk.total?'done':''}"></span>${x.name} <small>${kk.got}/${kk.total}</small></button>`;}).join('');
   const hasHof=st.hof.team.some(x=>x.mon);
   const fams=r.families.filter(fm=>{ const sts=fm.members.map(n=>S.dex[n]||0); if(PUB.filter==='got') return sts.some(v=>v); if(PUB.filter==='missing') return sts.some(v=>!v); if(PUB.filter==='via') return fm.members.some(n=>S.dex[n]&&S.via[n]); return true; }).map(fm=>`<div class="pfam">${fm.members.map(m=>{const s=S.dex[m]||0, via=s&&S.via[m];return `<div class="mon s${s} ${via?'via':''}" title="${esc(SP[m].name)}${via?' — caught in '+esc(gameOf(S.via[m]))+' (non-origin)':s===2?' — in HOME':s===1?' — caught':''}">${s?`<span class="st">${via?'via':s===2?'HOME':'✓'}</span>`:''}<img loading="lazy" src="${SPRITE(m)}" alt=""><div class="nm">${esc(SP[m].name)}</div><div class="no">#${String(m).padStart(4,'0')}</div></div>`;}).join('')}</div>`).join('')||'<p class="small">Nothing here yet.</p>';
   app.innerHTML=`
@@ -383,6 +449,7 @@ function renderPublic(){
       <div class="row" style="justify-content:space-between;margin-top:12px"><b style="font-size:22px">${k.got} / ${k.can}</b><span class="small" style="margin:0">caught in ${esc(g.game)} · ${k.h} in HOME</span></div>
       <div class="bar" style="margin-top:6px"><i class="h" style="width:${k.can?k.h/k.can*100:0}%"></i><i class="c" style="width:${k.can?k.c/k.can*100:0}%"></i></div>
       <p class="small">Whole region: ${k.all} / ${k.total}${k.vo?` · <span style="color:var(--via)">${k.vo} from other games</span>`:''}</p>
+      ${cu.list.length?`<div class="row" style="justify-content:space-between;margin-top:10px"><span class="small" style="margin:0">Catch-up from earlier regions</span><b style="color:var(--via)">${cu.done} / ${cu.list.length}</b></div><div class="bar" style="margin-top:4px;height:8px"><i style="background:var(--via);width:${cu.done/cu.list.length*100}%"></i></div>`:''}
       <p class="small"><b>Bosses beaten:</b> ${beaten} / ${g.bosses.length}${nb&&beaten?` · next: ${esc(nb.name)} (Lv ${nb.lv})`:''}${!nb?' · all cleared 🏆':''}</p></div>
     <div class="card"><h2>✨ Shinies</h2>${st.shinies.length?st.shinies.map(x=>{const n=findNum(x.mon);return `<div class="shinyrow">${n?`<img src="${SPRITE(n,true)}" alt="">`:''}<div><div style="font-weight:800">${esc(x.nick||x.mon)}</div>${x.nick?`<div class="small" style="margin:0">${esc(x.mon)}</div>`:''}</div></div>`;}).join(''):'<p class="small">No shinies yet.</p>'}</div>
    </div>
@@ -393,7 +460,7 @@ function renderPublic(){
    </div>
   </main>`;
 }
-document.addEventListener('click',e=>{ if(VIEW!=='public') return; const t=e.target.closest('[data-ptab],[data-pfilter]'); if(!t) return; if(t.dataset.ptab) PUB.tab=t.dataset.ptab; else PUB.filter=t.dataset.pfilter; renderPublic(); });
+document.addEventListener('click',e=>{ if(VIEW!=='public') return; const t=e.target.closest('[data-ptab],[data-pfilter],[data-rcard]'); if(!t) return; if(t.dataset.rcard){ PUB.tab=t.dataset.rcard; renderPublic(); window.scrollTo(0,0); return; } if(t.dataset.ptab) PUB.tab=t.dataset.ptab; else PUB.filter=t.dataset.pfilter; renderPublic(); });
 
 function renderOverlay(){
   const r=R(S.active), st=S.regions[r.id], o=S.overlay, k=counts(r), nb=nextBoss(r), g=V(r);
@@ -437,11 +504,20 @@ function cantSummary(r){
   return parts.join('')||'<p class="small">Everything from this region can be obtained in this game. 🎉</p>';
 }
 
+function neverList(){ const out=[]; for(let n=1;n<=1025;n++){ if(!SP[n]) continue; if(!REGIONS.some(r=>OKK.has(how(r,n)[0]))){ const o=REGIONS.find(r=>n>=r.range[0]&&n<=r.range[1]); out.push({n,o,h:o?how(o,n):['none','']}); } } return out; }
+function renderNever(tabs){
+  const L=neverList(), got=L.filter(x=>S.dex[x.n]).length;
+  const by={}; L.forEach(x=>{const k=x.o?x.o.id:'other'; (by[k] ||= []).push(x);});
+  const secs=REGIONS.filter(r=>by[r.id]).map(r=>`<div class="card"><h2>${esc(r.name)} <small style="color:var(--muted);font-weight:600">${esc(V(r).game)}</small></h2><div class="mons">${by[r.id].map(({n,h})=>{const s=S.dex[n]||0;return `<div class="mon s${s} ${s?'':'cant'}" data-ev="${n}" title="${esc(SP[n].name)}: ${esc(h[1])}\nClick: missing → got (event/trade) → in HOME">${s?`<span class="st">${s===2?'HOME':'✓'}</span>`:'<span class="tag M">✕</span>'}<img loading="lazy" src="${SPRITE(n)}" alt=""><div class="nm">${esc(SP[n].name)}</div><div class="no">#${String(n).padStart(4,'0')}</div></div>`;}).join('')}</div><div class="how">${by[r.id].map(({n,h})=>`<div><span class="k ${h[0]}">${KIND[h[0]]}</span><b>${esc(SP[n].name)}:</b> ${esc(h[1])}</div>`).join('')}</div></div>`).join('');
+  document.getElementById('app').innerHTML=`<header><div class="topline"><div class="brand">Living Dex <span>Journey</span></div><div class="total">${got} / ${L.length} uncatchable Pokémon obtained</div></div><div class="tabs">${tabs}</div></header>
+  <main style="display:block"><div class="card"><h2>🚫 Can't be caught anywhere in the journey (${L.length})</h2><p class="small">No game in your playthrough can catch these: mostly event-only mythicals, plus a few version exclusives. Get them from events, Pokémon HOME gifts or trades, then click them here to mark them. Set a region's game in its tab and this list updates.</p><div class="bar" style="margin-top:6px"><i class="h" style="width:${L.length?L.filter(x=>S.dex[x.n]===2).length/L.length*100:0}%"></i><i class="c" style="width:${L.length?L.filter(x=>S.dex[x.n]===1).length/L.length*100:0}%"></i></div></div>${secs}</main>`;
+}
 function renderControl(){
   const r=R(S.active), st=S.regions[r.id], k=counts(r), nb=nextBoss(r), g=V(r), bv=BV(r), cu=catchup(r);
   let all=0, allvo=0; REGIONS.forEach(x=>{const c=counts(x); all+=c.got; allvo+=c.vo;});
   const team=+st.team||0, over=nb&&team&&team>nb.cap;
-  const tabs=REGIONS.map(x=>{const kk=counts(x);return `<button class="tab ${x.id===S.active?'on':''}" data-tab="${x.id}"><span class="dot ${kk.got===kk.total?'done':(x.ds?'ds':'')}"></span>${x.name} <small>${kk.got}/${kk.total}</small></button>`;}).join('');
+  const tabs=REGIONS.map(x=>{const kk=counts(x);return `<button class="tab ${x.id===S.active?'on':''}" data-tab="${x.id}"><span class="dot ${kk.got===kk.total?'done':(x.ds?'ds':'')}"></span>${x.name} <small>${kk.got}/${kk.total}</small></button>`;}).join('').replace(/tab on/g,S.never?'tab':'tab on')+(()=>{const L=neverList();return `<button class="tab ${S.never?'on':''}" data-never="1"><span class="dot"></span>🚫 Uncatchable <small>${L.filter(x=>S.dex[x.n]).length}/${L.length}</small></button>`;})();
+  if(S.never) return renderNever(tabs);
   const bosses=g.bosses.map((b,i)=>`<div class="boss ${bv.beat[i]?'beat':''} ${nb&&nb.i===i?'next':''}"><input type="checkbox" data-beat="${i}" ${bv.beat[i]?'checked':''}><span class="bn">${esc(b[0])}</span><input type="number" min="1" max="100" data-lv="${i}" value="${bossLevel(r,i)}" title="Ace level (editable)"></div>`).join('');
   const f=S.filter, q=(S.search||'').toLowerCase();
   const fams=r.families.filter(fm=>{
@@ -512,6 +588,9 @@ function renderControl(){
       <label class="toggle"><input type="checkbox" data-ov="shiny" ${S.overlay.shiny?'checked':''}> Shiny goal</label>
       <label class="toggle"><input type="checkbox" data-ov="last" ${S.overlay.last?'checked':''}> Last caught</label>
       <label class="toggle"><input type="checkbox" data-ov="bank" ${S.overlay.bank?'checked':''}> Bank countdown (3DS games)</label>
+      <label class="toggle"><input type="checkbox" data-ov="toast" ${S.overlay.toast!==false?'checked':''}> Achievement pop-ups</label>
+      <label class="toggle"><input type="checkbox" data-ov="sound" ${S.overlay.sound!==false?'checked':''}> Pop-up sound (on stream)</label>
+      <button class="btn" id="testtoast" style="margin-top:6px">🎉 Test pop-up</button>
       <div class="row" style="margin-top:6px"><label class="small" style="margin:0">Break screen title</label><select id="breaktitle" style="width:auto">${Object.entries(BREAK_TITLES).map(([k,v])=>`<option value="${k}" ${(S.breakTitle||'soon')===k?'selected':''}>${v}</option>`).join('')}</select></div>
       <ol class="help">
         <li>OBS → Sources → <b>+ Browser</b>. Untick "Local file" and paste:<br><code>${esc(ovUrl)}</code><br>Size 470 × 330.</li>
@@ -542,7 +621,7 @@ function renderControl(){
 
 // ---------- website publishing (GitHub) ----------
 const GH={repo:'Leymo0/Portfolio',path:'livingdex/progress.json',branch:'main',tokenKey:'livingdex-gh-token',metaKey:'livingdex-gh-meta'};
-function makePub(){ const pub={updated:new Date().toISOString(),active:S.active,dex:S.dex,via:S.via,pick:S.pick,regions:{}}; for(const id in S.regions){ const x=S.regions[id]; pub.regions[id]={variant:x.variant,bv:x.bv,shinies:x.shinies,hof:x.hof,team:x.team}; } return pub; }
+function makePub(){ const pub={updated:new Date().toISOString(),active:S.active,dex:S.dex,via:S.via,pick:S.pick,ach:S.ach||{},regions:{}}; for(const id in S.regions){ const x=S.regions[id]; pub.regions[id]={variant:x.variant,bv:x.bv,shinies:x.shinies,hof:x.hof,team:x.team}; } return pub; }
 function ghToken(){ try{return localStorage.getItem(GH.tokenKey)||'';}catch(e){return '';} }
 function ghMeta(){ try{return JSON.parse(localStorage.getItem(GH.metaKey)||'{}');}catch(e){return {};} }
 function ghSetMeta(m){ try{localStorage.setItem(GH.metaKey,JSON.stringify(Object.assign(ghMeta(),m)));}catch(e){} }
@@ -576,10 +655,13 @@ let delArm=null;
 function confirmDel(x){ if(delArm===x){delArm=null;return true;} delArm=x; setTimeout(()=>{if(delArm===x)delArm=null;},3000); const b=document.querySelectorAll('[data-delshiny]'); b.forEach(el=>{ if(S.regions[S.active].shinies[+el.dataset.delshiny]===x) el.textContent='Sure?'; }); return false; }
 document.addEventListener('click',e=>{
   if(VIEW!=='control') return;
-  const t=e.target.closest('[data-tab],[data-mon],[data-cu],[data-resetpick],[data-filter],[data-team],[data-delshiny],#addshiny,#export,#import,#webexport,#publish,#ghsave,#ghforget');
+  const t=e.target.closest('#testtoast,[data-never],[data-ev],[data-tab],[data-mon],[data-cu],[data-resetpick],[data-filter],[data-team],[data-delshiny],#addshiny,#export,#import,#webexport,#publish,#ghsave,#ghforget');
   if(!t) return;
   const st=S.regions[S.active];
-  if(t.dataset.tab){S.active=t.dataset.tab;S.search='';}
+  if(t.id==='testtoast'){ S.toasts=S.toasts||[]; const n=S.last&&S.last.num||25; S.toasts.push({id:'test',t:Date.now(),ic:'🎉',title:'Test pop-up!',sub:'This is how achievements look on stream',mon:n}); if(S.toasts.length>12) S.toasts=S.toasts.slice(-12); }
+  else if(t.dataset.never){S.never=true;}
+  else if(t.dataset.ev){const n=+t.dataset.ev, v=((S.dex[n]||0)+1)%3; if(v){S.dex[n]=v; if(v===1) S.last={num:n,t:Date.now()};} else delete S.dex[n];}
+  else if(t.dataset.tab){S.active=t.dataset.tab;S.never=false;S.search='';}
   else if(t.dataset.mon){const n=+t.dataset.mon; { const rr=R(S.active), g=groupOf(rr,n); if(g&&!S.dex[n]){ const vk=V(rr).key; S.pick[vk] ||= {}; const ps=picksOf(rr,g.gi); if(!ps.includes(g.root)&&ps.length<groupCap(rr,g.gi)) S.pick[vk][g.gi]=[...ps,g.root]; } } if(S.via[n]&&S.dex[n]){ delete S.via[n]; S.dex[n]=1; S.last={num:n,t:Date.now()}; } else { const v=((S.dex[n]||0)+1)%3; if(v) S.dex[n]=v; else delete S.dex[n]; if(v===1) S.last={num:n,t:Date.now()}; } }
   else if(t.dataset.cu){const n=+t.dataset.cu, rid=S.active; if(!(S.dex[n]&&S.via[n]!==rid)){ const v=((S.dex[n]||0)+1)%3; if(v){ S.dex[n]=v; S.via[n]=rid; if(v===1) S.last={num:n,t:Date.now()}; } else { delete S.dex[n]; delete S.via[n]; } } }
   else if(t.dataset.filter){S.filter=t.dataset.filter;}
@@ -626,6 +708,52 @@ document.addEventListener('input',e=>{
 
 // ---------- sync between the OBS dock and the overlay ----------
 function pull(){ if(VIEW==='public') return; try{ const raw=localStorage.getItem(KEY); if(raw&&raw!==lastRaw){ lastRaw=raw; S=load(); if(VIEW==='overlay') renderOverlay(); else if(VIEW==='hof') renderHof(); else if(VIEW==='break') renderBreak(); else { const a=document.activeElement; if(!a||!/INPUT|SELECT/.test(a.tagName)) renderControl(); } } }catch(e){} }
+
+// ---------- achievements / celebrations ----------
+function achNow(){
+  const A={}; let tot=0; const NV=new Set(neverList().map(x=>x.n));
+  REGIONS.forEach(r=>{
+    const k=counts(r), g=V(r), bv=BV(r), cu=catchup(r); tot+=k.got;
+    if(k.can&&k.got>=k.can) A['dex:'+g.key]={ic:'📕',title:'Pokédex complete!',sub:`Every catchable ${r.name} Pokémon caught in ${g.game}`,mon:r.range[0]};
+    if(k.can&&k.h>=k.can) A['home:'+g.key]={ic:'🏠',title:'All moved to HOME!',sub:`${r.name}'s ${k.can} Pokémon are safe in Pokémon HOME`,mon:r.range[0]};
+    { let fill=0,need=0,full=true; for(let n=r.range[0];n<=r.range[1];n++){ if(S.dex[n]) fill++; else full=false; if(!NV.has(n)){ need++; } } const filledReach=[...Array(r.range[1]-r.range[0]+1).keys()].every(i=>{const n=r.range[0]+i;return S.dex[n]||NV.has(n);});
+      if(filledReach&&!full) A['region:'+r.id]={ic:'🗺️',title:`${r.name} dex filled!`,sub:`Every ${r.name} Pokémon you can catch on the journey${k.vo?` (${k.vo} from other games)`:''}`,mon:r.range[1]};
+      if(full){ A['region:'+r.id]=A['region:'+r.id]||{ic:'🗺️',title:`${r.name} dex filled!`,sub:`All ${k.total} ${r.name} Pokémon`,mon:r.range[1]}; A['full:'+r.id]={ic:'💯',title:`${r.name} 100%!`,sub:`All ${k.total} ${r.name} Pokémon, even the uncatchable ones`,mon:r.range[1]}; } }
+    if(cu.list.length&&cu.done>=cu.list.length) A['cu:'+g.key]={ic:'🟣',title:'Catch-up complete!',sub:`All ${cu.list.length} missing Pokémon from earlier regions caught in ${g.game}`,mon:cu.list[cu.list.length-1]};
+    const nb=g.bosses.length; if(nb&&bv.beat[nb-1]) A['champ:'+g.key]={ic:'👑',title:r.id==='hisui'?'Arceus awaits!':'Champion!',sub:`${g.bosses[nb-1][0]} defeated in ${g.game}`,mon:(findNum((S.regions[r.id].hof.team[1]||{}).mon)||findNum((S.regions[r.id].hof.team[0]||{}).mon)||0)};
+    (S.regions[r.id].shinies||[]).forEach(x=>{ A['sh:'+x.t]={ic:'✨',title:'Shiny found!',sub:x.nick?`${x.nick} the ${x.mon}`:(x.mon||'A shiny!'),mon:findNum(x.mon)||0,shiny:true}; });
+  });
+  const L=neverList(); if(L.length&&L.every(x=>S.dex[x.n])) A.never={ic:'🚫',title:'The impossible ones!',sub:`All ${L.length} uncatchable Pokémon obtained`,mon:L[0].n};
+  [100,250,500,750,1000].forEach(m=>{ if(tot>=m) A['tot:'+m]={ic:'🎉',title:`${m} Pokémon!`,sub:`${m} caught in their own games`,mon:0}; });
+  return A;
+}
+function checkAch(){
+  const A=achNow();
+  if(!S.ach){ S.ach={}; for(const k in A) S.ach[k]=1; S.toasts=[]; return; }
+  S.toasts=S.toasts||[]; const now=Date.now();
+  for(const k in A) if(!S.ach[k]){ S.ach[k]=now; S.toasts.push(Object.assign({id:k,t:now+S.toasts.length},A[k])); }
+  if(S.toasts.length>12) S.toasts=S.toasts.slice(-12);
+}
+const TOAST={key:'livingdex-toast-seen-'+VIEW,q:[],busy:false};
+try{ if(!localStorage.getItem(TOAST.key)) localStorage.setItem(TOAST.key,String(Date.now())); }catch(e){}
+function toastTick(){
+  if(VIEW!=='control'&&VIEW!=='overlay') return;
+  if(VIEW==='overlay'&&S.overlay.toast===false) return;
+  let seen=0; try{ seen=+localStorage.getItem(TOAST.key)||0; }catch(e){}
+  (S.toasts||[]).forEach(x=>{ if(x.t>seen&&!TOAST.q.some(y=>y.t===x.t)) TOAST.q.push(x); });
+  if(TOAST.busy||!TOAST.q.length) return;
+  const x=TOAST.q.shift(); TOAST.busy=true;
+  try{ localStorage.setItem(TOAST.key,String(Math.max(seen,x.t))); }catch(e){}
+  const el=document.createElement('div'); el.className='toast '+(VIEW==='overlay'?'on-ov':'')+(x.shiny?' shiny':'');
+  const bits=Array.from({length:22},(_,i)=>`<i style="--x:${(Math.random()*2-1)*220}px;--y:${-60-Math.random()*160}px;--r:${Math.random()*720-360}deg;--d:${Math.random()*.25}s;background:${['#ff6b6b','#ffd166','#b98cff','#5ee6c4','#6bb8ff'][i%5]}"></i>`).join('');
+  el.innerHTML=`<div class="tconf">${bits}</div><div class="tic">${x.mon?`<img src="${SPRITE(x.mon,!!x.shiny)}" alt="">`:`<span>${x.ic}</span>`}</div><div class="ttx"><small>${x.ic} ACHIEVEMENT</small><b>${esc(x.title)}</b><span>${esc(x.sub)}</span></div>`;
+  document.body.appendChild(el);
+  if(VIEW==='overlay'&&S.overlay.sound!==false) chime(!!x.shiny);
+  setTimeout(()=>el.classList.add('out'),6200);
+  setTimeout(()=>{ el.remove(); TOAST.busy=false; toastTick(); },6800);
+}
+function chime(sh){ try{ const C=window.__ac||(window.__ac=new (window.AudioContext||window.webkitAudioContext)()); const notes=sh?[1318,1568,1976,2637]:[523,659,784,1047]; notes.forEach((f,i)=>{ const o=C.createOscillator(), g=C.createGain(); o.type=sh?'sine':'triangle'; o.frequency.value=f; const t0=C.currentTime+i*.12; g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.18,t0+.02); g.gain.exponentialRampToValueAtTime(.001,t0+.5); o.connect(g).connect(C.destination); o.start(t0); o.stop(t0+.55); }); }catch(e){} }
+setInterval(toastTick,500);
 window.addEventListener('storage',e=>{ if(e.key===KEY) pull(); });
 setInterval(pull, 800);
 setInterval(()=>{ if(VIEW==='control') refreshPublishStatus(); }, 15000);
